@@ -10,7 +10,7 @@ define(['jquery'], function($) {
 			var eles = trkpt.getElementsByTagName("ele");
 			var ele = undefined;
 			if (eles) {
-				ele = parseFloat(eles[0].nodeValue);
+				ele = parseFloat(eles[0].firstChild.nodeValue);
 			}
 			this.points.push({lat: lat, lon: lon, ele: ele});
 		}

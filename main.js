@@ -7,7 +7,8 @@ requirejs.config({
 
 require(['gpx'], function(gpx) {
 	gpx.load(
-		'http://www.topografix.com/fells_loop.gpx',
+		'gpx/foxboro.gpx',
 		function(gpx) {
+			console.log(gpx);
 		});
 });

@@ -28,7 +28,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
 	Track.prototype.toPath = function() {
 		var path = [];
 		$.each(this.trackSegments, function(index, trackSegment) {
-			path.concat(trackSegment.toPath());
+			path = path.concat(trackSegment.toPath());
 		});
 		return path;
 	};
@@ -54,7 +54,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
 
 	TrackSegment.prototype.toPath = function() {
 		return $.map(this.trackPoints, function(trackPoint) {
-			trackPoint.toLatLng();
+			return trackPoint.toLatLng();
 		});
 	}
 

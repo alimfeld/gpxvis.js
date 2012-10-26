@@ -1,18 +1,21 @@
 define(["jquery", "gvis"], function($, gvis) {
 
     function ElevationProfile(track, targetDiv) {
+
+		this.track = track;
         addChildElements(targetDiv);
         
-        var dashboard = createDashboard(targetDiv);
-        var controlWrapper = createControlWrapper();
-        var chartWrapper = createChartWrapper();
-        var dataTable = buildDataTable(track);
+        this.dashboard = createDashboard(targetDiv);
+        this.controlWrapper = createControlWrapper();
+        this.chartWrapper = createChartWrapper();
+        this.dataTable = buildDataTable(track);
+		this.firstRow = 0;
         
-        dashboard.bind(controlWrapper, chartWrapper);
-        dashboard.draw(dataTable);
+        this.dashboard.bind(this.controlWrapper, this.chartWrapper);
+        this.dashboard.draw(this.dataTable);
 
-        addControlWrapperStateChangeListener(controlWrapper, dataTable, track);
-        addChartWrapperListener(chartWrapper, track);
+        this.addControlWrapperStateChangeListener();
+        this.addChartWrapperListener();
     }
 
     function addChildElements(targetDiv) {
@@ -78,21 +81,24 @@ define(["jquery", "gvis"], function($, gvis) {
         return dt;
     }
     
-    function addControlWrapperStateChangeListener(controlWrapper, dataTable, track) {
-        gvis.events.addListener(controlWrapper, 'statechange', function(e) {
+    ElevationProfile.prototype.addControlWrapperStateChangeListener = function() {
+		var self = this;
+        gvis.events.addListener(self.controlWrapper, 'statechange', function(e) {
             if (!e.inProgress) {
-				var range = controlWrapper.getState().range;
-				var filteredRowIds = dataTable.getFilteredRows(
+				var range = self.controlWrapper.getState().range;
+				var filteredRowIds = self.dataTable.getFilteredRows(
 					[{
 						"column": 0, 
-					"minValue": range.start, 
-					"maxValue": range.end 
+						"minValue": range.start, 
+						"maxValue": range.end 
 					}]
 				);
-                fireChartRangeChangedEvent(track.getTrackPoints(filteredRowIds[0], filteredRowIds[filteredRowIds.length - 1]));
+				self.firstRow = filteredRowIds[0];
+				self.lastRow = filteredRowIds[filteredRowIds.length - 1];
+                fireChartRangeChangedEvent(self.track.getTrackPoints(self.firstRow, self.lastRow));
             }
         });
-    }
+    };
     
     function fireChartRangeChangedEvent(trackPoints) {
 		var event = document.createEvent("Event");
@@ -101,10 +107,11 @@ define(["jquery", "gvis"], function($, gvis) {
 		document.dispatchEvent(event);
 	}
     
-    function addChartWrapperListener(chartWrapper, track) {
-        gvis.events.addListener(chartWrapper, "ready", function() {
-			gvis.events.addListener(chartWrapper.getChart(), "onmouseover", function(data) {
-				var trackPoint = track.getTrackPoint(data.row);
+    ElevationProfile.prototype.addChartWrapperListener = function() {
+		var self = this;
+        gvis.events.addListener(self.chartWrapper, "ready", function() {
+			gvis.events.addListener(self.chartWrapper.getChart(), "onmouseover", function(data) {
+				var trackPoint = self.track.getTrackPoint(self.firstRow + data.row);
 				fireOnTrackPointHoverEvent(trackPoint);
 		   	});
 		});
@@ -116,9 +123,13 @@ define(["jquery", "gvis"], function($, gvis) {
 		event.trackPoint = trackPoint;
 		document.dispatchEvent(event);
 	}
+
+	function build(track, targetDiv) {
+		return new ElevationProfile(track, targetDiv);
+	}
     
     return {
-        build: ElevationProfile
+        build: build
     }
 
 });

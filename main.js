@@ -27,7 +27,7 @@ require(["jquery", "gpx", "map", "elevation_profile"], function($, gpx, map, ele
 			}
 			var m = map.create($("#map")[0]);
 			m.drawTrack(gpx.tracks[0]);
-			elevationProfile.build(gpx, "elevationProfile");
+			elevationProfile.build(gpx.tracks[0], "#elevationProfile");
 		});
 });
 

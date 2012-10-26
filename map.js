@@ -1,7 +1,7 @@
 define(["jquery", "gmaps"], function($, gmaps) {
 
-	function Map(element, mapOptions) {
-		this.map = new gmaps.Map(element, mapOptions);
+	function Map(selector, mapOptions) {
+		this.map = new gmaps.Map($(selector)[0], mapOptions);
 		addEventListenerForTrackPointMarker(this);
 		addEventListenerForTrackRangeChange(this);
 	}	
@@ -58,14 +58,14 @@ define(["jquery", "gmaps"], function($, gmaps) {
 		map.fitBounds(bounds);
 	}
 
-	function create(element) {
+	function create(selector) {
 		var myLatLng = new google.maps.LatLng(0, -180);
 		var mapOptions = {
 			zoom: 3,
 			center: myLatLng,
 			mapTypeId: google.maps.MapTypeId.TERRAIN
 		};
-		return new Map(element, mapOptions);
+		return new Map(selector, mapOptions);
 	}
 
 	return {

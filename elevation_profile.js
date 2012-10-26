@@ -4,28 +4,17 @@ define(["jquery", "gvis"], function($, gvis) {
         addChildElements(targetDiv);
         
         var dashboard = createDashboard(targetDiv);
-        var control = createControlWrapper();
-        var chart = createChartWrapper();
-        var data = buildDataTable(track);
+        var controlWrapper = createControlWrapper();
+        var chartWrapper = createChartWrapper();
+        var dataTable = buildDataTable(track);
+        
+        dashboard.bind(controlWrapper, chartWrapper);
+        dashboard.draw(dataTable);
 
-        dashboard.bind(control, chart);
-        dashboard.draw(data);
-
-		gvis.events.addListener(chart, "ready", function() {
-			gvis.events.addListener(chart.getChart(), "onmouseover", function(data) {
-				var trackPoint = track.getTrackPoint(data.row);
-				fireOnTrackPointHoverEvent(trackPoint);
-		   	});
-		});
+        addControlWrapperStateChangeListener(controlWrapper, dataTable);
+        addChartWrapperListener(chartWrapper, track);
     }
 
-	function fireOnTrackPointHoverEvent(trackPoint) {
-		var event = document.createEvent("Event");
-		event.initEvent("onTrackPointHover", true, true);
-		event.trackPoint = trackPoint;
-		document.dispatchEvent(event);
-	}
-    
     function addChildElements(targetDiv) {
         $(targetDiv).append("<div id=\"chart\"></div>");
         $(targetDiv).append("<div id=\"control\"></div>");
@@ -48,13 +37,8 @@ define(["jquery", "gvis"], function($, gvis) {
                         "chartArea": { "width": "90%" },
                         "hAxis": {"baselineColor": "none"},
                     },
+                    "snapToData": true
                 }
-            }
-        });
-        
-        gvis.events.addListener(controlWrapper, 'statechange', function(e) {
-            if (!e.inProgress) {
-                console.log(controlWrapper.getState());
             }
         });
         
@@ -77,37 +61,73 @@ define(["jquery", "gvis"], function($, gvis) {
     }
     
     function buildDataTable(track) {
-        // TODO refactor, include coordinates
-        var columnDefinition = [
-            { "id": 0, "label": "Distance", "type": "number"},
-            { "id": 1, "label": "Elevation", "type": "number"},
-           // { "id": 2, "label": "Latitude", "type": "number", "role": "annotation-text" },
-            //{ "id": 3 }
-        ];
-        
         var dataArray = [];
         
         $.each(track.trackSegments, function(trackSegmentNr, trackSegment) {
             $.each(trackSegment.trackPoints, function(trackPointNr, trackPoint) {
-                var row = [
-                    parseFloat(trackPoint.dist),
-                    parseFloat(trackPoint.ele),
-                    //parseFloat(trackPoint.lat), 
-                    //parseFloat(trackPoint.lon)
-                    //trackPoint
-                ];
+                var row = { 
+                    "c": [
+                        { "v": trackPoint.dist },
+                        { "v": trackPoint.ele }
+                    ], 
+                    p: { "trackPoint": trackPoint }
+                };
+                    
                 dataArray.push(row);
             })
         });
         
-        var dt = new gvis.DataTable({ 
-            "cols": columnDefinition,
-            //"rows": dataArray
-        }); 
+        var columnDefinition = [
+            { "id": 0, "label": "Distance", "type": "number" },
+            { "id": 1, "label": "Elevation", "type": "number" },
+        ];
         
-        dt.addRows(dataArray);
-        return dt;
+        return new gvis.DataTable({ 
+            "cols": columnDefinition,
+            "rows": dataArray
+        }); 
     }
+    
+    function addControlWrapperStateChangeListener(controlWrapper, dataTable) {
+        gvis.events.addListener(controlWrapper, 'statechange', function(e) {
+            if (!e.inProgress) {
+                var range = controlWrapper.getState().range;
+                var filteredRowIds = dataTable.getFilteredRows(
+                    [{
+                        "column": 0, 
+                        "minValue": range.start, 
+                        "maxValue": range.end 
+                    }]
+                );
+                
+                var indexRange = [filteredRowIds[0], filteredRowIds[-1]];
+                fireChartRangeChangedEvent(indexRange);
+            }
+        });
+    }
+    
+    function fireChartRangeChangedEvent(indexRange) {
+		var event = document.createEvent("Event");
+		event.initEvent("onChartRangeChanged", true, true);
+		event.indexRange = indexRange;
+		document.dispatchEvent(event);
+	}
+    
+    function addChartWrapperListener(chartWrapper, track) {
+        gvis.events.addListener(chartWrapper, "ready", function() {
+			gvis.events.addListener(chartWrapper.getChart(), "onmouseover", function(data) {
+				var trackPoint = track.getTrackPoint(data.row);
+				fireOnTrackPointHoverEvent(trackPoint);
+		   	});
+		});
+    }
+    
+    function fireOnTrackPointHoverEvent(trackPoint) {
+		var event = document.createEvent("Event");
+		event.initEvent("onTrackPointHover", true, true);
+		event.trackPoint = trackPoint;
+		document.dispatchEvent(event);
+	}
     
     return {
         build: ElevationProfile

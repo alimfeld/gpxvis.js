@@ -2,19 +2,38 @@ define(["jquery", "gmaps"], function($, gmaps) {
 
 	function Map(element, mapOptions) {
 		this.map = new gmaps.Map(element, mapOptions);
-		var _self = this;
+		addEventListenerForTrackPointMarker(this);
+		addEventListenerForTrackRangeChange(this);
+	}	
+
+	function addEventListenerForTrackPointMarker(map) {
 		document.addEventListener("onTrackPointHover", function(event) {
-			if (_self.trackPointMarker) {
-				_self.trackPointMarker.setPosition(event.trackPoint.toLatLng());
+			if (map.trackPointMarker) {
+				map.trackPointMarker.setPosition(event.trackPoint.toLatLng());
 			} else {
-				_self.trackPointMarker = new gmaps.Marker({
+				map.trackPointMarker = new gmaps.Marker({
 					position: event.trackPoint.toLatLng(),
-					map: _self.map,
+					map: map.map,
 					icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
 				});
 			}
 		}, false);
-	}	
+	}
+
+	function addEventListenerForTrackRangeChange(map) {
+		document.addEventListener("onChartRangeChanged", function(event) {
+			var path = $.map(event.trackPoints, function(trackPoint) { return trackPoint.toLatLng(); });
+			if (map.trackRange) {
+				map.trackRange.setPath(path);
+			} else {
+				map.trackRange = new gmaps.Polyline({
+					path: path,
+					map: map.map,
+					strokeColor: "red"
+				});
+			}
+		}, false);
+	}
 
 	Map.prototype.drawTrack = function(track) {
 		var path = track.toPath();

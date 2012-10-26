@@ -2,6 +2,8 @@ define(["jquery", "gmaps"], function($, gmaps) {
 
 	function Map(element, mapOptions) {
 		this.map = new gmaps.Map(element, mapOptions);
+		this.trackPointMarker = null;
+		document.addEventListener("onTrackPointHover", this.handleTrackPointHover, false);
 	}	
 
 	Map.prototype.drawTrack = function(track) {
@@ -11,6 +13,19 @@ define(["jquery", "gmaps"], function($, gmaps) {
 			map: this.map
 		});
 		fitAndCenter(this.map, path);
+	};
+
+	Map.prototype.handleTrackPointHover = function(event) {
+		if (this.trackPointMarker != null) {
+			this.trackPointMarker.setPosition(event.trackPoint.toLatLng());
+		} else {
+			this.trackPointMarker = new gmaps.Marker({
+				position: event.trackPoint.toLatLng(),
+				map: this.map,
+				icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+			});
+			console.log(event.trackPoint);
+		}
 	};
 
 	function fitAndCenter(map, points) {

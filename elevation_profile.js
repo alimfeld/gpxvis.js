@@ -10,7 +10,21 @@ define(["jquery", "gvis"], function($, gvis) {
 
         dashboard.bind(control, chart);
         dashboard.draw(data);
+
+		gvis.events.addListener(chart, "ready", function() {
+			gvis.events.addListener(chart.getChart(), "onmouseover", function(data) {
+				var trackPoint = gpx.tracks[0].getTrackPoint(data.row);
+				fireOnTrackPointHoverEvent(trackPoint);
+		   	});
+		});
     }
+
+	function fireOnTrackPointHoverEvent(trackPoint) {
+		var event = document.createEvent("Event");
+		event.initEvent("onTrackPointHover", true, true);
+		event.trackPoint = trackPoint;
+		document.dispatchEvent(event);
+	}
     
     function addChildElements(targetDiv) {
         var selector = "#" + targetDiv; 

@@ -1,12 +1,12 @@
 define(["jquery", "gvis"], function($, gvis) {
 
-    function ElevationProfile(gpx, targetDiv) {
+    function ElevationProfile(track, targetDiv) {
         addChildElements(targetDiv);
         
-        var dashboard = createDashboard();
+        var dashboard = createDashboard(targetDiv);
         var control = createControlWrapper();
         var chart = createChartWrapper();
-        var data = buildDataTable(gpx);
+        var data = buildDataTable(track);
 
         dashboard.bind(control, chart);
         dashboard.draw(data);
@@ -27,37 +27,43 @@ define(["jquery", "gvis"], function($, gvis) {
 	}
     
     function addChildElements(targetDiv) {
-        var selector = "#" + targetDiv; 
-        $(selector).append("<div id=\"chart\"></div>");
-        $(selector).append("<div id=\"control\"></div>");
+        $(targetDiv).append("<div id=\"chart\"></div>");
+        $(targetDiv).append("<div id=\"control\"></div>");
     }
     
-    function createDashboard() {
-        return new gvis.Dashboard(document.getElementById("elevationProfile"));
+    function createDashboard(targetDiv) {
+        return new gvis.Dashboard($(targetDiv)[0]);
     }
     
     function createControlWrapper() {
-        return new gvis.ControlWrapper({
+        var controlWrapper = new gvis.ControlWrapper({
             "controlType": "ChartRangeFilter",
             "containerId": "control",
             "options": {
-                "width": "50%",
                 "filterColumnIndex": 0, // filter by distance
                 "ui": {
-                    "chartType": "LineChart",
+                    "width": "50%",
+                    "chartType": "AreaChart",
                     "chartOptions": {
                         "chartArea": { "width": "90%" },
                         "hAxis": {"baselineColor": "none"},
-                        "curveType": "function"
                     },
                 }
             }
         });
+        
+        gvis.events.addListener(controlWrapper, 'statechange', function(e) {
+            if (!e.inProgress) {
+                console.log(controlWrapper.getState());
+            }
+        });
+        
+        return controlWrapper;
     }
     
     function createChartWrapper() {
         return new gvis.ChartWrapper({
-            "chartType": "LineChart",
+            "chartType": "AreaChart",
             "containerId": "chart",
             "options": {
                 "width": "50%",
@@ -66,23 +72,41 @@ define(["jquery", "gvis"], function($, gvis) {
                 "titleY": "Elevation (m)",
                 "titleX": "Distance (m)",
                 "focusBorderColor": "#00ff00",
-                "curveType": "function"
             }
         });
     }
     
-    function buildDataTable(gpx) {
-        dataArray = [["Distance", "Elevation"]];
+    function buildDataTable(track) {
+        // TODO refactor, include coordinates
+        var columnDefinition = [
+            { "id": 0, "label": "Distance", "type": "number"},
+            { "id": 1, "label": "Elevation", "type": "number"},
+           // { "id": 2, "label": "Latitude", "type": "number", "role": "annotation-text" },
+            //{ "id": 3 }
+        ];
         
-        $.each(gpx.tracks, function(trackNr, track) {
-            $.each(track.trackSegments, function(trackSegmentNr, trackSegment) {
-                $.each(trackSegment.trackPoints, function(trackPointNr, trackPoint) {
-                    dataArray.push([parseFloat(trackPoint.dist), parseFloat(trackPoint.ele)]);
-                })
+        var dataArray = [];
+        
+        $.each(track.trackSegments, function(trackSegmentNr, trackSegment) {
+            $.each(trackSegment.trackPoints, function(trackPointNr, trackPoint) {
+                var row = [
+                    parseFloat(trackPoint.dist),
+                    parseFloat(trackPoint.ele),
+                    //parseFloat(trackPoint.lat), 
+                    //parseFloat(trackPoint.lon)
+                    //trackPoint
+                ];
+                dataArray.push(row);
             })
         });
         
-        return gvis.arrayToDataTable(dataArray);
+        var dt = new gvis.DataTable({ 
+            "cols": columnDefinition,
+            //"rows": dataArray
+        }); 
+        
+        dt.addRows(dataArray);
+        return dt;
     }
     
     return {

@@ -16,7 +16,7 @@ define("gvis", ["goog!visualization,1,packages:[corechart]"], function() {
 	return window.google.visualization;
 });
 
-require(["gpx"], function(gpx) {
+require(["jquery", "gpx", "map"], function($, gpx, map) {
 	gpx.load(
 		"gpx/foxboro.gpx",
 		function(gpx) {
@@ -25,6 +25,8 @@ require(["gpx"], function(gpx) {
 				var track = gpx.tracks[i];
 				console.log("Track " + (i+1) + ": " + track.name + " (" + track.getDist() + " meters)");
 			}
+			var m = map.create($("#map")[0]);
+			m.drawTrack(gpx.tracks[0]);
 		});
 });
 

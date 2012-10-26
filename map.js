@@ -21,10 +21,8 @@ define(["jquery", "gmaps"], function($, gmaps) {
 		} else {
 			this.trackPointMarker = new gmaps.Marker({
 				position: event.trackPoint.toLatLng(),
-				map: this.map,
-				icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+				map: this.map
 			});
-			console.log(event.trackPoint);
 		}
 	};
 

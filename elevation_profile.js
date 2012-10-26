@@ -13,7 +13,7 @@ define(["jquery", "gvis"], function($, gvis) {
 
 		gvis.events.addListener(chart, "ready", function() {
 			gvis.events.addListener(chart.getChart(), "onmouseover", function(data) {
-				var trackPoint = gpx.tracks[0].getTrackPoint(data.row);
+				var trackPoint = track.getTrackPoint(data.row);
 				fireOnTrackPointHoverEvent(trackPoint);
 		   	});
 		});

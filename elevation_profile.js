@@ -11,7 +11,7 @@ define(["jquery", "gvis"], function($, gvis) {
         dashboard.bind(controlWrapper, chartWrapper);
         dashboard.draw(dataTable);
 
-        addControlWrapperStateChangeListener(controlWrapper, dataTable);
+        addControlWrapperStateChangeListener(controlWrapper, dataTable, track);
         addChartWrapperListener(chartWrapper, track);
     }
 
@@ -88,28 +88,26 @@ define(["jquery", "gvis"], function($, gvis) {
         }); 
     }
     
-    function addControlWrapperStateChangeListener(controlWrapper, dataTable) {
+    function addControlWrapperStateChangeListener(controlWrapper, dataTable, track) {
         gvis.events.addListener(controlWrapper, 'statechange', function(e) {
             if (!e.inProgress) {
-                var range = controlWrapper.getState().range;
-                var filteredRowIds = dataTable.getFilteredRows(
-                    [{
-                        "column": 0, 
-                        "minValue": range.start, 
-                        "maxValue": range.end 
-                    }]
-                );
-                
-                var indexRange = [filteredRowIds[0], filteredRowIds[-1]];
-                fireChartRangeChangedEvent(indexRange);
+				var range = controlWrapper.getState().range;
+				var filteredRowIds = dataTable.getFilteredRows(
+					[{
+						"column": 0, 
+					"minValue": range.start, 
+					"maxValue": range.end 
+					}]
+				);
+                fireChartRangeChangedEvent(track.getTrackPoints(filteredRowIds[0], filteredRowIds[filteredRowIds.length - 1]));
             }
         });
     }
     
-    function fireChartRangeChangedEvent(indexRange) {
+    function fireChartRangeChangedEvent(trackPoints) {
 		var event = document.createEvent("Event");
 		event.initEvent("onChartRangeChanged", true, true);
-		event.indexRange = indexRange;
+		event.trackPoints = trackPoints;
 		document.dispatchEvent(event);
 	}
     

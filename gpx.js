@@ -35,7 +35,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
 	};
 
 	Track.prototype.getTrackPoints = function(startIndex, endIndex) {
-		return trackPoints.slice(startIndex, endIndex + 1);
+		return this.trackPoints.slice(startIndex, endIndex + 1);
 	};
 
 	Track.prototype.toPath = function() {

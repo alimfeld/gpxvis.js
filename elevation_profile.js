@@ -1,27 +1,64 @@
-define(['jquery', 'gvis'], function($, gvis) {
+define(["jquery", "gvis"], function($, gvis) {
 
     function ElevationProfile(gpx, targetDiv) {
+        addChildElements(targetDiv);
+        
+        var dashboard = createDashboard();
+        var control = createControlWrapper();
+        var chart = createChartWrapper();
         var data = buildDataTable(gpx);
 
-        var options = {
-            width: 512,
-            height: 200,
-            legend: 'none',
-            titleY: 'Elevation (m)',
-            titleX: 'Distance (m)',
-            focusBorderColor: '#00ff00',
-            curveType: 'function',
-            vAxis: {
-                minValue: data.getColumnRange(1).min
+        dashboard.bind(control, chart);
+        dashboard.draw(data);
+    }
+    
+    function addChildElements(targetDiv) {
+        var selector = "#" + targetDiv; 
+        $(selector).append("<div id=\"chart\"></div>");
+        $(selector).append("<div id=\"control\"></div>");
+    }
+    
+    function createDashboard() {
+        return new gvis.Dashboard(document.getElementById("elevationProfile"));
+    }
+    
+    function createControlWrapper() {
+        return new gvis.ControlWrapper({
+            "controlType": "ChartRangeFilter",
+            "containerId": "control",
+            "options": {
+                "width": "50%",
+                "filterColumnIndex": 0, // filter by distance
+                "ui": {
+                    "chartType": "LineChart",
+                    "chartOptions": {
+                        "chartArea": { "width": "90%" },
+                        "hAxis": {"baselineColor": "none"},
+                        "curveType": "function"
+                    },
+                }
             }
-        };
-
-        var chart = new gvis.LineChart(document.getElementById(targetDiv));
-        chart.draw(data, options);
+        });
+    }
+    
+    function createChartWrapper() {
+        return new gvis.ChartWrapper({
+            "chartType": "LineChart",
+            "containerId": "chart",
+            "options": {
+                "width": "50%",
+                "chartArea": { "width": "90%" },
+                "legend": "none",
+                "titleY": "Elevation (m)",
+                "titleX": "Distance (m)",
+                "focusBorderColor": "#00ff00",
+                "curveType": "function"
+            }
+        });
     }
     
     function buildDataTable(gpx) {
-        dataArray = [['Distance', 'Elevation']];
+        dataArray = [["Distance", "Elevation"]];
         
         $.each(gpx.tracks, function(trackNr, track) {
             $.each(track.trackSegments, function(trackSegmentNr, trackSegment) {

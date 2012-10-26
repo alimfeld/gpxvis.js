@@ -12,7 +12,7 @@ define("gmaps", ["async!http://maps.google.com/maps/api/js?libraries=geometry&se
 	return window.google.maps;
 });
 
-define("gvis", ["goog!visualization,1,packages:[corechart]"], function() {
+define("gvis", ["goog!visualization,1,packages:[corechart,controls]"], function() {
 	return window.google.visualization;
 });
 

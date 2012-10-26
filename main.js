@@ -16,7 +16,8 @@ define("gvis", ["goog!visualization,1,packages:[corechart,controls]"], function(
 	return window.google.visualization;
 });
 
-require(["jquery", "gpx", "map", "elevation_profile"], function($, gpx, map, elevationProfile) {
+require(["jquery", "gpx", "map", "elevation_profile", "statistics"], 
+	function($, gpx, map, elevationProfile, statistics) {
 	gpx.load(
 		"gpx/foxboro.gpx",
 		function(gpx) {
@@ -27,7 +28,9 @@ require(["jquery", "gpx", "map", "elevation_profile"], function($, gpx, map, ele
 			}
 			var m = map.create($("#map")[0]);
 			m.drawTrack(gpx.tracks[0]);
+			
 			elevationProfile.build(gpx.tracks[0], "#elevationProfile");
+			statistics.create("#statistics");
 		});
 });
 

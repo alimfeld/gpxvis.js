@@ -34,11 +34,15 @@ define(["jquery", "gmaps"], function($, gmaps) {
 	};
 
 	Track.prototype.getTrackPoint = function(index) {
+		return this.getTrackPoints(index, index)[0];
+	};
+
+	Track.prototype.getTrackPoints = function(startIndex, endIndex) {
 		var trackPoints = [];
 		$.each(this.trackSegments, function() {
 			trackPoints = trackPoints.concat(this.trackPoints);
 		});
-		return trackPoints[index];
+		return trackPoints.slice(startIndex, endIndex + 1);
 	};
 
 	function TrackSegment($trkseg) {

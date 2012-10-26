@@ -63,29 +63,19 @@ define(["jquery", "gvis"], function($, gvis) {
     function buildDataTable(track) {
         var dataArray = [];
         
-        $.each(track.trackSegments, function(trackSegmentNr, trackSegment) {
-            $.each(trackSegment.trackPoints, function(trackPointNr, trackPoint) {
-                var row = { 
-                    "c": [
-                        { "v": trackPoint.dist },
-                        { "v": trackPoint.ele }
-                    ], 
-                    p: { "trackPoint": trackPoint }
-                };
-                    
-                dataArray.push(row);
-            })
+        $.each(track.trackPoints, function(trackPointNr, trackPoint) {
+            dataArray.push([ 
+                trackPoint.dist,
+                parseFloat(trackPoint.ele)
+            ]);
         });
         
-        var columnDefinition = [
-            { "id": 0, "label": "Distance", "type": "number" },
-            { "id": 1, "label": "Elevation", "type": "number" },
-        ];
+        var dt = new gvis.DataTable();
+        dt.addColumn("number", "Distance");
+        dt.addColumn("number", "Elevation");
+        dt.addRows(dataArray);
         
-        return new gvis.DataTable({ 
-            "cols": columnDefinition,
-            "rows": dataArray
-        }); 
+        return dt;
     }
     
     function addControlWrapperStateChangeListener(controlWrapper, dataTable) {

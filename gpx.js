@@ -10,67 +10,41 @@ define(["jquery", "gmaps"], function($, gmaps) {
 
 	function Track($trk) {
 		this.name = $trk.find("name").text();
-		var trackSegments = [];
-		$trk.find("trkseg").each(function() {
-			trackSegments.push(new TrackSegment($(this)));
-		});
-		this.trackSegments = trackSegments;
-	}
-
-	Track.prototype.getDist = function() {
-		var dist = 0;
-		for (var i = 0; i < this.trackSegments.length; i++) {
-			dist += this.trackSegments[i].getDist();
-		}
-		return dist;
-	};
-
-	Track.prototype.toPath = function() {
-		var path = [];
-		$.each(this.trackSegments, function(index, trackSegment) {
-			path = path.concat(trackSegment.toPath());
-		});
-		return path;
-	};
-
-	Track.prototype.getTrackPoint = function(index) {
-		return this.getTrackPoints(index, index)[0];
-	};
-
-	Track.prototype.getTrackPoints = function(startIndex, endIndex) {
+        var prevWayPoint = undefined;
 		var trackPoints = [];
-		$.each(this.trackSegments, function() {
-			trackPoints = trackPoints.concat(this.trackPoints);
-		});
-		return trackPoints.slice(startIndex, endIndex + 1);
-	};
-
-	function TrackSegment($trkseg) {
-		var prevWayPoint = undefined;
-		var trackPoints = [];
-		$trkseg.find("trkpt").each(function() {
-			var wayPoint = new WayPoint($(this));
-			if (prevWayPoint) {
+        
+		$trk.find("trkpt").each(function() {
+            var wayPoint = new WayPoint($(this));
+            
+            if (prevWayPoint) {
 				wayPoint.distRel = gmaps.geometry.spherical.computeDistanceBetween(prevWayPoint.toLatLng(), wayPoint.toLatLng());
 				wayPoint.dist = prevWayPoint.dist + wayPoint.distRel;
 			} else {
 				wayPoint.distRel = 0;
 				wayPoint.dist = 0;
 			}
+            
 			prevWayPoint = wayPoint;
 			trackPoints.push(wayPoint);
-
 		});
 		this.trackPoints = trackPoints;
 	}
 
-	TrackSegment.prototype.toPath = function() {
+	Track.prototype.getTrackPoint = function(index) {
+		return this.trackPoints[index];
+	};
+
+	Track.prototype.getTrackPoints = function(startIndex, endIndex) {
+		return trackPoints.slice(startIndex, endIndex + 1);
+	};
+
+	Track.prototype.toPath = function() {
 		return $.map(this.trackPoints, function(trackPoint) {
 			return trackPoint.toLatLng();
 		});
 	}
 
-	TrackSegment.prototype.getDist = function() {
+	Track.prototype.getDist = function() {
 		if (this.trackPoints.length > 1) {
 			return this.trackPoints[this.trackPoints.length - 1].dist;
 		} else {

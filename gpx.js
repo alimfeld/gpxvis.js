@@ -9,7 +9,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
 	}
 
 	function Track($trk) {
-		this.name = $trk.find("name").text();
+		this.name = $trk.children("name").text();
         var prevWayPoint = undefined;
 		var trackPoints = [];
         

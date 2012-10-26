@@ -1,4 +1,17 @@
 div#map {
-	width: 400px;
+	width: 800px;
 	height: 400px;
+}
+
+div#elevationProfile {
+	width: 800px;
+	height: 200px;
+}
+
+div#elevationProfile div#chart {
+	height: 80%;
+}
+
+div#elevationProfile div#control {
+	height: 20%;
 }

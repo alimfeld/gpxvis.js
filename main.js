@@ -2,7 +2,9 @@ requirejs.config({
 
 	paths: {
 		jquery: "http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min",
-		async: "lib/async"
+		async: "lib/async",
+		goog: "lib/goog",
+		propertyParser: "lib/propertyParser"
 	}
 });
 
@@ -10,9 +12,13 @@ define("gmaps", ["async!http://maps.google.com/maps/api/js?libraries=geometry&se
 	return window.google.maps;
 });
 
-require(['gpx'], function(gpx) {
+define("gvis", ["goog!visualization,1,packages:[corechart]"], function() {
+	return window.google.visualization;
+});
+
+require(["gpx"], function(gpx) {
 	gpx.load(
-		'gpx/foxboro.gpx',
+		"gpx/foxboro.gpx",
 		function(gpx) {
 			console.log(gpx);
 			for (var i = 0; i < gpx.tracks.length; i++) {
@@ -21,3 +27,4 @@ require(['gpx'], function(gpx) {
 			}
 		});
 });
+

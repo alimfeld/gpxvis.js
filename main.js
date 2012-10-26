@@ -16,7 +16,7 @@ define("gvis", ["goog!visualization,1,packages:[corechart]"], function() {
 	return window.google.visualization;
 });
 
-require(["gpx"], function(gpx) {
+require(['gpx', 'elevation_profile'], function(gpx, elevationProfile) {
 	gpx.load(
 		"gpx/foxboro.gpx",
 		function(gpx) {
@@ -25,6 +25,8 @@ require(["gpx"], function(gpx) {
 				var track = gpx.tracks[i];
 				console.log("Track " + (i+1) + ": " + track.name + " (" + track.getDist() + " meters)");
 			}
+
+			elevationProfile.build(gpx, "elevationProfile");
 		});
 });
 

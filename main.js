@@ -18,7 +18,7 @@ define("gvis", ["goog!visualization,1,packages:[corechart,controls]"], function(
 
 require(["jquery", "gpx", "map", "elevation_profile"], function($, gpx, map, elevationProfile) {
 	gpx.load(
-		"gpx/foxboro.gpx",
+		"gpx/blue_hills.gpx",
 		function(gpx) {
 			console.log(gpx);
 			for (var i = 0; i < gpx.tracks.length; i++) {

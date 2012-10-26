@@ -9,7 +9,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
 	}
 
 	function Track($trk) {
-		this.name = $trk.find("name").text();
+		this.name = $trk.children("name").text();
 		var trackSegments = [];
 		$trk.find("trkseg").each(function() {
 			trackSegments.push(new TrackSegment($(this)));

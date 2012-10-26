@@ -2,8 +2,18 @@ define(["jquery", "gmaps"], function($, gmaps) {
 
 	function Map(element, mapOptions) {
 		this.map = new gmaps.Map(element, mapOptions);
-		this.trackPointMarker = null;
-		document.addEventListener("onTrackPointHover", this.handleTrackPointHover, false);
+		var _self = this;
+		document.addEventListener("onTrackPointHover", function(event) {
+			if (_self.trackPointMarker) {
+				_self.trackPointMarker.setPosition(event.trackPoint.toLatLng());
+			} else {
+				_self.trackPointMarker = new gmaps.Marker({
+					position: event.trackPoint.toLatLng(),
+					map: _self.map,
+					icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+				});
+			}
+		}, false);
 	}	
 
 	Map.prototype.drawTrack = function(track) {
@@ -12,18 +22,15 @@ define(["jquery", "gmaps"], function($, gmaps) {
 			path: path,
 			map: this.map
 		});
+		var startMarker = new gmaps.Marker({
+			position: path[0],
+			map: this.map
+		});
+		var endMarker = new gmaps.Marker({
+			position: path[path.length - 1],
+			map: this.map
+		});
 		fitAndCenter(this.map, path);
-	};
-
-	Map.prototype.handleTrackPointHover = function(event) {
-		if (this.trackPointMarker != null) {
-			this.trackPointMarker.setPosition(event.trackPoint.toLatLng());
-		} else {
-			this.trackPointMarker = new gmaps.Marker({
-				position: event.trackPoint.toLatLng(),
-				map: this.map
-			});
-		}
 	};
 
 	function fitAndCenter(map, points) {

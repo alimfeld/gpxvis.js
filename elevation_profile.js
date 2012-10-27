@@ -114,6 +114,9 @@ define(["jquery", "gvis"], function($, gvis) {
 				var trackPoint = self.track.getTrackPoint(self.firstRow + data.row);
 				fireOnTrackPointHoverEvent(trackPoint);
 		   	});
+			gvis.events.addListener(self.chartWrapper.getChart(), "onmouseout", function(data) {
+				fireOnTrackPointHoverEvent();
+		   	});
 		});
     }
     

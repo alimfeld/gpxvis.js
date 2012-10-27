@@ -9,14 +9,22 @@ define(["jquery", "gmaps"], function($, gmaps) {
 	Map.prototype.addEventListenerForTrackPointMarker = function() {
 		var self = this;
 		document.addEventListener("onTrackPointHover", function(event) {
-			if (self.trackPointMarker) {
-				self.trackPointMarker.setPosition(event.trackPoint.toLatLng());
-			} else {
-				self.trackPointMarker = new gmaps.Marker({
-					position: event.trackPoint.toLatLng(),
-					map: self.map,
-					icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
-				});
+			if (event.trackPoint) {
+				if (self.trackPointMarker) {
+					self.trackPointMarker.setPosition(event.trackPoint.toLatLng());
+				} else {
+					self.trackPointMarker = new gmaps.Marker({
+						position: event.trackPoint.toLatLng(),
+						map: self.map,
+						icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+					});
+				}
+			}
+			else {
+				if (self.trackPointMarker) {
+					self.trackPointMarker.setMap(null);
+					self.trackPointMarker = null;
+				}
 			}
 		}, false);
 	};

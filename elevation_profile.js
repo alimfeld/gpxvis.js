@@ -69,13 +69,17 @@ define(["jquery", "gvis"], function($, gvis) {
         $.each(track.trackPoints, function(trackPointNr, trackPoint) {
             dataArray.push([ 
                 trackPoint.dist,
-                trackPoint.ele
+                trackPoint.ele,
+				Math.round(trackPoint.ele) + " m",
+				trackPoint.name
             ]);
         });
         
         var dt = new gvis.DataTable();
         dt.addColumn("number", "Distance");
         dt.addColumn("number", "Elevation");
+        dt.addColumn({ type: "string", role: "tooltip" });
+        dt.addColumn({ type: "string", role: "annotation" });
         dt.addRows(dataArray);
         
         return dt;
@@ -113,6 +117,9 @@ define(["jquery", "gvis"], function($, gvis) {
 			gvis.events.addListener(self.chartWrapper.getChart(), "onmouseover", function(data) {
 				var trackPoint = self.track.getTrackPoint(self.firstRow + data.row);
 				fireOnTrackPointHoverEvent(trackPoint);
+		   	});
+			gvis.events.addListener(self.chartWrapper.getChart(), "onmouseout", function(data) {
+				fireOnTrackPointHoverEvent();
 		   	});
 		});
     }

@@ -30,6 +30,7 @@ require(["jquery", "gpx", "map", "elevation_profile"], function($, gpx, map, ele
 		if (track) {
 			var m = map.create("#map");
 			m.drawTrack(track);
+			m.drawWayPoints(gpx.wayPoints);
 			elevationProfile.build(track, "#elevationProfile");
 		}
 	});

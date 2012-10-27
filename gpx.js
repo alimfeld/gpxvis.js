@@ -1,18 +1,26 @@
 define(["jquery", "gmaps"], function($, gmaps) {
 
 	function Gpx($gpx) {
-		var tracks = [];
-		$gpx.find("trk").each(function() {
-			tracks.push(new Track($(this)));
+		var self = this;
+
+		this.wayPoints = [];
+		$gpx.find("wpt").each(function() {
+			self.wayPoints.push(new WayPoint($(this)));
 		});
-		this.tracks = tracks;
+
+		this.tracks = [];
+		$gpx.find("trk").each(function() {
+			self.tracks.push(new Track($(this)));
+		});
 	}
 
 	function Track($trk) {
+		var self = this;
+
 		this.name = $trk.children("name").text();
+
         var prevWayPoint = undefined;
-		var trackPoints = [];
-        
+		this.trackPoints = [];
 		$trk.find("trkpt").each(function() {
             var wayPoint = new WayPoint($(this));
             
@@ -25,9 +33,8 @@ define(["jquery", "gmaps"], function($, gmaps) {
 			}
             
 			prevWayPoint = wayPoint;
-			trackPoints.push(wayPoint);
+			self.trackPoints.push(wayPoint);
 		});
-		this.trackPoints = trackPoints;
 	}
 
 	Track.prototype.getTrackPoint = function(index) {
@@ -57,7 +64,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
 		for (var i = 0; i < attributes.length; i++) {
 			this[attributes[i]] = $wtp.attr(attributes[i]);
 		}
-		var elements = ["ele"];
+		var elements = ["ele", "name", "desc"];
 		for (var i = 0; i < elements.length; i++) {
 			this[elements[i]] = $wtp.find(elements[i]).text();
 		}

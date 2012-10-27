@@ -46,14 +46,38 @@ define(["jquery", "gmaps"], function($, gmaps) {
 		});
 		var startMarker = new gmaps.Marker({
 			position: path[0],
-			map: this.map
+			map: this.map,
+			icon: "http://maps.google.com/mapfiles/kml/paddle/go.png",
+			title: "Start"
 		});
 		var endMarker = new gmaps.Marker({
 			position: path[path.length - 1],
-			map: this.map
+			map: this.map,
+			icon: "http://maps.google.com/mapfiles/kml/paddle/stop.png",
+			title: "End"
 		});
 		this.fitAndCenter(path);
 	};
+
+	Map.prototype.drawWayPoints = function(wayPoints) {
+		var self = this;
+		$.each(wayPoints, function() {
+			var marker = new gmaps.Marker({
+				position: this.toLatLng(),
+				map: self.map
+			});
+			var infoWindow = new gmaps.InfoWindow({
+				content: "<h1>" + this.name + "</h1><p>" + this.desc + "</p>"
+			});
+			gmaps.event.addListener(marker, "click", function() {
+				if (self.infoWindow) {
+					self.infoWindow.close();
+				}
+				infoWindow.open(self.map, marker);
+				self.infoWindow = infoWindow;
+			});
+		});
+	}
 
 	Map.prototype.fitAndCenter = function(points) {
 		var bounds = new gmaps.LatLngBounds();

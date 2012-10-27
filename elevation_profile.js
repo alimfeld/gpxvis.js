@@ -69,7 +69,7 @@ define(["jquery", "gvis"], function($, gvis) {
         $.each(track.trackPoints, function(trackPointNr, trackPoint) {
             dataArray.push([ 
                 trackPoint.dist,
-                parseFloat(trackPoint.ele)
+                trackPoint.ele
             ]);
         });
         

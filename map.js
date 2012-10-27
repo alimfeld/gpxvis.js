@@ -16,6 +16,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
 					self.trackPointMarker = new gmaps.Marker({
 						position: event.trackPoint.toLatLng(),
 						map: self.map,
+						zIndex: gmaps.Marker.MAX_ZINDEX,
 						icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
 					});
 				}

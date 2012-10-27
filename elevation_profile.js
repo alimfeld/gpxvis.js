@@ -69,13 +69,15 @@ define(["jquery", "gvis"], function($, gvis) {
         $.each(track.trackPoints, function(trackPointNr, trackPoint) {
             dataArray.push([ 
                 trackPoint.dist,
-                parseFloat(trackPoint.ele)
+                parseFloat(trackPoint.ele),
+				Math.round(trackPoint.ele) + " m"
             ]);
         });
         
         var dt = new gvis.DataTable();
         dt.addColumn("number", "Distance");
         dt.addColumn("number", "Elevation");
+        dt.addColumn({ type: "string", role: "tooltip" });
         dt.addRows(dataArray);
         
         return dt;

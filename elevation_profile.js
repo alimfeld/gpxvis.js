@@ -1,18 +1,23 @@
 define(["jquery", "gvis"], function($, gvis) {
 
     function ElevationProfile(track, targetDiv) {
-
 		this.track = track;
+        
         addChildElements(targetDiv);
         
         this.dashboard = createDashboard(targetDiv);
         this.controlWrapper = createControlWrapper();
         this.chartWrapper = createChartWrapper();
-        this.dataTable = buildDataTable(track);
+        
 		this.firstRow = 0;
         
         this.dashboard.bind(this.controlWrapper, this.chartWrapper);
-        this.dashboard.draw(this.dataTable);
+        
+        var self = this;
+        track.lookUpMissingElevationData(function() {
+            self.dataTable = buildDataTable(self.track);
+            self.dashboard.draw(self.dataTable);
+        });
 
         this.addControlWrapperStateChangeListener();
         this.addChartWrapperListener();

@@ -13,28 +13,6 @@ define(["jquery", "gmaps"], function($, gmaps) {
 			self.tracks.push(new Track($(this)));
 		});
 	}
-    
-    Gpx.prototype.lookUpMissingElevationData = function(callback) {
-        this.numberOfCallbackInvocations = 1;
-        
-        var self = this;
-        
-        function trackCallback(track) {
-            console.log("Lookup complete for track " + track.name);
-            console.log("trackCallback called " + self.numberOfCallbackInvocations + "/" + self.tracks.length + " times.");
-            
-            if (self.numberOfCallbackInvocations == self.tracks.length) {
-                console.log("Lookup complete, calling external callback.");
-                callback(self);
-            } else {
-                self.numberOfCallbackInvocations++;
-            }
-        }
-        
-        $.each(self.tracks, function(k, track) {
-            track.lookUpMissingElevationData(trackCallback);
-        });
-    };
 
 	function Track($trk) {
 		var self = this;
@@ -96,11 +74,11 @@ define(["jquery", "gmaps"], function($, gmaps) {
     Track.prototype.lookUpMissingElevationData = function(callback) {
         if (this.wayPointsWithoutElevation.length == 0) {
             console.log("No lookup needed for track " + this.name);
-            return callback(this);
+            return callback();
         } 
         
         console.log("ElevationLookUp: Look up data for " 
-            + this.wayPointsWithoutElevation.length + " locations");
+            + this.wayPointsWithoutElevation.length + " locations in track " + this.name);
         
             
         var elevationService = new gmaps.ElevationService();
@@ -113,21 +91,21 @@ define(["jquery", "gmaps"], function($, gmaps) {
         elevationService.getElevationForLocations(positionalRequest, function(results, status) {
             if (status == gmaps.ElevationStatus.OK) {
               if (results.length > 0) {
-                console.log("ElevationLookUp: got " + results.length + " results");
+                console.log("ElevationLookUp: Got " + results.length + " results");
                 
                 $.each(results, function(k, result) {
                     var key = result.location.toString();
                     var index = self.mapLatLngToWayPointIndex[key];
-                    // TODO refactor, probably remove mapping table
+                    // TODO refactor, probably remove mapping table 
                     self.trackPoints[k].ele = result.elevation;
                 });
               } else {
                 console.log("ElevationLookUp: No results found");
               }
             } else {
-              console.log("ElevationLookUp: failed due to: " + status);
+              console.log("ElevationLookUp: Failed due to: " + status);
             }
-            callback(self);
+            callback();
         });
     };
 
@@ -161,7 +139,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
 			dataType: "xml",
 			success: function(data) {
 				var gpx = new Gpx($(data));
-                gpx.lookUpMissingElevationData(callback);
+                callback(gpx);
 			}
 		});
 	}

@@ -70,7 +70,8 @@ define(["jquery", "gvis"], function($, gvis) {
             dataArray.push([ 
                 trackPoint.dist,
                 parseFloat(trackPoint.ele),
-				Math.round(trackPoint.ele) + " m"
+				Math.round(trackPoint.ele) + " m",
+				trackPoint.name
             ]);
         });
         
@@ -78,6 +79,7 @@ define(["jquery", "gvis"], function($, gvis) {
         dt.addColumn("number", "Distance");
         dt.addColumn("number", "Elevation");
         dt.addColumn({ type: "string", role: "tooltip" });
+        dt.addColumn({ type: "string", role: "annotation" });
         dt.addRows(dataArray);
         
         return dt;

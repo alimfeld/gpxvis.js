@@ -17,7 +17,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
 						position: event.trackPoint.toLatLng(),
 						map: self.map,
 						zIndex: gmaps.Marker.MAX_ZINDEX,
-						icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+						icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
 					});
 				}
 			}

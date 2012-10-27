@@ -56,24 +56,33 @@ define(["jquery", "gmaps"], function($, gmaps) {
 		var startMarker = new gmaps.Marker({
 			position: path[0],
 			map: this.map,
-			icon: "http://maps.google.com/mapfiles/kml/paddle/go.png",
+			zIndex: gmaps.Marker.MAX_ZINDEX - 2,
+			icon: "http://maps.google.com/mapfiles/kml/pal4/icon20.png",
+			shadow: "http://maps.google.com/mapfiles/kml/pal4/icon20s.png",
 			title: "Start"
 		});
 		var endMarker = new gmaps.Marker({
 			position: path[path.length - 1],
 			map: this.map,
-			icon: "http://maps.google.com/mapfiles/kml/paddle/stop.png",
+			zIndex: gmaps.Marker.MAX_ZINDEX - 1,
+			icon: "http://maps.google.com/mapfiles/kml/pal4/icon21.png",
+			shadow: "http://maps.google.com/mapfiles/kml/pal4/icon21s.png",
 			title: "End"
 		});
+		var trackPointsWithName = $.grep(track.trackPoints, function(trackPoint) {
+			return trackPoint.name;
+		});
+		this.drawWayPoints(trackPointsWithName, "http://labs.google.com/ridefinder/images/mm_20_blue.png");
 		this.fitAndCenter(path);
 	};
 
-	Map.prototype.drawWayPoints = function(wayPoints) {
+	Map.prototype.drawWayPoints = function(wayPoints, icon) {
 		var self = this;
 		$.each(wayPoints, function() {
 			var marker = new gmaps.Marker({
 				position: this.toLatLng(),
-				map: self.map
+				map: self.map,
+				icon: icon
 			});
 			var infoWindow = new gmaps.InfoWindow({
 				content: "<h1>" + this.name + "</h1><p>" + this.desc + "</p>"

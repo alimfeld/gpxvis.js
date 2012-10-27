@@ -16,7 +16,8 @@ define("gvis", ["goog!visualization,1,packages:[corechart,controls]"], function(
 	return window.google.visualization;
 });
 
-require(["jquery", "gpx", "map", "elevation_profile"], function($, gpx, map, elevationProfile) {
+require(["jquery", "gpx", "map", "elevation_profile", "statistics"], 
+	function($, gpx, map, elevationProfile, statistics) {
 
 	function getURLParameter(name) {
 		return decodeURIComponent(
@@ -32,6 +33,7 @@ require(["jquery", "gpx", "map", "elevation_profile"], function($, gpx, map, ele
 			m.drawTrack(track);
 			m.drawWayPoints(gpx.wayPoints);
 			elevationProfile.build(track, "#elevationProfile");
+			statistics.create("#statistics");
 		}
 	});
 });

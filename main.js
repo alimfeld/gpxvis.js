@@ -18,19 +18,22 @@ define("gvis", ["goog!visualization,1,packages:[corechart,controls]"], function(
 
 require(["jquery", "gpx", "map", "elevation_profile", "statistics"], 
 	function($, gpx, map, elevationProfile, statistics) {
-	gpx.load(
-		"gpx/foxboro.gpx",
-		function(gpx) {
-			console.log(gpx);
-			for (var i = 0; i < gpx.tracks.length; i++) {
-				var track = gpx.tracks[i];
-				console.log("Track " + (i+1) + ": " + track.name + " (" + track.getDist() + " meters)");
-			}
-			var m = map.create($("#map")[0]);
-			m.drawTrack(gpx.tracks[0]);
-			
-			elevationProfile.build(gpx.tracks[0], "#elevationProfile");
+
+	function getURLParameter(name) {
+		return decodeURIComponent(
+			(new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20')) || null;
+	}
+	var fileName = getURLParameter("gpx") || "blue_hills";
+	var trackNo = parseInt(getURLParameter("track") || "1");
+
+	gpx.load("gpx/" + fileName + ".gpx", function(gpx) {
+		var track = gpx.tracks[trackNo - 1];
+		if (track) {
+			var m = map.create("#map");
+			m.drawTrack(track);
+			elevationProfile.build(track, "#elevationProfile");
 			statistics.create("#statistics");
-		});
+		}
+	});
 });
 

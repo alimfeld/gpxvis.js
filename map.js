@@ -1,39 +1,42 @@
 define(["jquery", "gmaps"], function($, gmaps) {
 
-	function Map(element, mapOptions) {
-		this.map = new gmaps.Map(element, mapOptions);
-		addEventListenerForTrackPointMarker(this);
-		addEventListenerForTrackRangeChange(this);
+	function Map(selector, mapOptions) {
+		this.map = new gmaps.Map($(selector)[0], mapOptions);
+		this.addEventListenerForTrackPointMarker();
+		this.addEventListenerForTrackRangeChange(this);
 	}	
 
-	function addEventListenerForTrackPointMarker(map) {
+	Map.prototype.addEventListenerForTrackPointMarker = function() {
+		var self = this;
 		document.addEventListener("onTrackPointHover", function(event) {
-			if (map.trackPointMarker) {
-				map.trackPointMarker.setPosition(event.trackPoint.toLatLng());
+			if (self.trackPointMarker) {
+				self.trackPointMarker.setPosition(event.trackPoint.toLatLng());
 			} else {
-				map.trackPointMarker = new gmaps.Marker({
+				self.trackPointMarker = new gmaps.Marker({
 					position: event.trackPoint.toLatLng(),
-					map: map.map,
+					map: self.map,
 					icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
 				});
 			}
 		}, false);
-	}
+	};
 
-	function addEventListenerForTrackRangeChange(map) {
+	Map.prototype.addEventListenerForTrackRangeChange = function() {
+		var self = this;
 		document.addEventListener("onChartRangeChanged", function(event) {
 			var path = $.map(event.trackPoints, function(trackPoint) { return trackPoint.toLatLng(); });
-			if (map.trackRange) {
-				map.trackRange.setPath(path);
+			if (self.trackRange) {
+				self.trackRange.setPath(path);
 			} else {
-				map.trackRange = new gmaps.Polyline({
+				self.trackRange = new gmaps.Polyline({
 					path: path,
-					map: map.map,
+					map: self.map,
 					strokeColor: "red"
 				});
 			}
+			self.fitAndCenter(path);
 		}, false);
-	}
+	};
 
 	Map.prototype.drawTrack = function(track) {
 		var path = track.toPath();
@@ -49,23 +52,23 @@ define(["jquery", "gmaps"], function($, gmaps) {
 			position: path[path.length - 1],
 			map: this.map
 		});
-		fitAndCenter(this.map, path);
+		this.fitAndCenter(path);
 	};
 
-	function fitAndCenter(map, points) {
+	Map.prototype.fitAndCenter = function(points) {
 		var bounds = new gmaps.LatLngBounds();
 		$.each(points, function() { bounds.extend(this); });
-		map.fitBounds(bounds);
-	}
+		this.map.fitBounds(bounds);
+	};
 
-	function create(element) {
+	function create(selector) {
 		var myLatLng = new google.maps.LatLng(0, -180);
 		var mapOptions = {
 			zoom: 3,
 			center: myLatLng,
 			mapTypeId: google.maps.MapTypeId.TERRAIN
 		};
-		return new Map(element, mapOptions);
+		return new Map(selector, mapOptions);
 	}
 
 	return {

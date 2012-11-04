@@ -29,7 +29,7 @@ Features
 * Missing elevation data is automaticaly fetched using the [Google Elevation
   API](https://developers.google.com/maps/documentation/elevation/).
 
-* The elevation profile can be zoomed in and out (additional control to select a range).
+* The elevation profile can be zoomed in and out by selecting a range.
 
 * The elevation profile is linked to the track drawn on the map:
   - The current point (mouseover) is marked on the map.

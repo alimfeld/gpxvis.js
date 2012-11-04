@@ -3,15 +3,15 @@ div#map {
 	height: 400px;
 }
 
-div#elevationProfile {
+div#elep {
 	width: 800px;
 	height: 200px;
 }
 
-div#elevationProfile div#chart {
+div#elep div#chart {
 	height: 80%;
 }
 
-div#elevationProfile div#control {
+div#elep div#control {
 	height: 20%;
 }

@@ -32,6 +32,7 @@ Features
 * The elevation profile is linked to the track drawn on the map:
   - The current point (mouseover) is marked on the map.
   - The selected range is highlighted on the map.
+  - The map automatically fits and centers the selected range.
 
 Credits
 -------

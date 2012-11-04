@@ -24,6 +24,8 @@ Tools](https://developers.google.com/chart/).
 Features
 --------
 
+* Waypoint name and description is shown in an info-window on the map.
+
 * Missing elevation data is automaticaly fetched using the [Google Elevation
   API](https://developers.google.com/maps/documentation/elevation/).
 

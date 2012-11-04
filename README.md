@@ -36,6 +36,12 @@ Features
   - The selected range is highlighted on the map.
   - The map automatically fits and centers the selected range.
 
+Demo
+----
+
+A little [demo](http://alimfeld.github.com/gpxvis.js/) is published on [GitHub
+Pages](http://pages.github.com/).
+
 Credits
 -------
 

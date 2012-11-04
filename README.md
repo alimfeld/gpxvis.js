@@ -41,6 +41,8 @@ Credits
 
 * [RequireJS](http://requirejs.org): A JavaScript Module Loader and
   [AMD](https://github.com/amdjs/amdjs-api/wiki/AMD) implementation.
+* [Requirejs-plugins](https://github.com/millermedeiros/requirejs-plugins):
+  RequireJS plugins for use with the Google APIs.
 * [Google Maps](https://developers.google.com/maps/)
 * [Google Charts](https://developers.google.com/chart/)
 * [Netcetera](https://github.com/netceteragroup) for sponsoring the work on

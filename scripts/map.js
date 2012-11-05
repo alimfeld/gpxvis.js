@@ -93,7 +93,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
       });
       self.overlays.push(marker);
       var infoWindow = new gmaps.InfoWindow({
-        content: "<h1>" + this.name + "</h1><p>" + this.desc + "</p>"
+        content: "<h3>" + this.name + "</h3><p>" + this.desc + "</p>"
       });
       gmaps.event.addListener(marker, "click", function() {
         if (self.infoWindow) {

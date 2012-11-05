@@ -1,17 +1,19 @@
 div#map {
-	width: 800px;
-	height: 400px;
+  height: 600px;
+}
+
+#map img {
+  max-width: none;
 }
 
 div#elep {
-	width: 800px;
-	height: 200px;
+  height: 200px;
 }
 
 div#elep div#chart {
-	height: 80%;
+  height: 80%;
 }
 
 div#elep div#control {
-	height: 20%;
+  height: 20%;
 }

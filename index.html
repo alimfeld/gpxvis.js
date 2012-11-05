@@ -3,15 +3,25 @@
   <head>
     <meta charset="utf-8">
     <title>GPXVis.js</title>
-    <link rel="stylesheet" type="text/css" href="styles/layout.css"/>
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet">
+    <link href="styles/layout.css" rel="stylesheet">
     <script data-main="scripts/main" src="http://cdnjs.cloudflare.com/ajax/libs/require.js/2.0.6/require.min.js"></script>
   </head>
   <body>
-    <h1>GPXVis.js</h1>
-    <select id="gpx"></select>
-    <select id="track"></select>
-    <div id="map"></div>
-    <div id="elep"></div>
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <h1>GPXVis.js</h1>
+        <form>
+          <fieldset>
+            <legend>Please select GPX file and track to visualize.</legend>
+            <select id="gpx"></select>
+            <select id="track"></select>
+          </fieldset> 
+        </form>
+      </div>
+      <div id="map" class="row-fluid"></div>
+      <div id="elep" class="row-fluid"></div>
+    </div>
   </body>
 </html>
 

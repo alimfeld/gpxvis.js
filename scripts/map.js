@@ -2,6 +2,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
 
   function Map(selector, mapOptions) {
     this.map = new gmaps.Map($(selector)[0], mapOptions);
+    this.overlays = [];
     this.addEventListenerForTrackPointMarker();
     this.addEventListenerForTrackRangeChange(this);
   }	
@@ -34,17 +35,14 @@ define(["jquery", "gmaps"], function($, gmaps) {
     var self = this;
     document.addEventListener("onChartRangeChanged", function(event) {
       var path = $.map(event.trackPoints, function(trackPoint) { return trackPoint.toLatLng(); });
-      if (self.trackRange) {
-        self.trackRange.setPath(path);
-      } else {
-        self.trackRange = new gmaps.Polyline({
-          path: path,
-          map: self.map,
-          strokeColor: "red"
-        });
-      }
+      self.trackRange.setPath(path);
       self.fitAndCenter(path);
     }, false);
+  };
+
+  Map.prototype.clear = function() {
+    var self = this;
+    $.each(this.overlays, function() { this.setMap(null); });
   };
 
   Map.prototype.drawTrack = function(track) {
@@ -53,6 +51,13 @@ define(["jquery", "gmaps"], function($, gmaps) {
       path: path,
       map: this.map
     });
+    this.overlays.push(polyline);
+    this.trackRange = new gmaps.Polyline({
+      path: path,
+      map: this.map,
+      strokeColor: "red"
+    });
+    this.overlays.push(this.trackRange);
     var startMarker = new gmaps.Marker({
       position: path[0],
       map: this.map,
@@ -61,6 +66,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
       shadow: "http://maps.google.com/mapfiles/kml/pal4/icon20s.png",
       title: "Start"
     });
+    this.overlays.push(startMarker);
     var endMarker = new gmaps.Marker({
       position: path[path.length - 1],
       map: this.map,
@@ -69,6 +75,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
       shadow: "http://maps.google.com/mapfiles/kml/pal4/icon21s.png",
       title: "End"
     });
+    this.overlays.push(endMarker);
     var trackPointsWithName = $.grep(track.trackPoints, function(trackPoint) {
       return trackPoint.name;
     });
@@ -84,6 +91,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
         map: self.map,
         icon: icon
       });
+      self.overlays.push(marker);
       var infoWindow = new gmaps.InfoWindow({
         content: "<h1>" + this.name + "</h1><p>" + this.desc + "</p>"
       });

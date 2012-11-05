@@ -1,20 +1,49 @@
 define(["jquery", "gpx", "map", "elep"], function($, gpx, map, elep) {
-  function getURLParameter(name) {
-    return decodeURIComponent(
-      (new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20')) || null;
-  }
-  var fileName = getURLParameter("gpx") || "blue_hills";
-  var trackNo = parseInt(getURLParameter("track") || "1");
 
-  gpx.load("gpx/" + fileName + ".gpx", function(gpx) {
-    var track = gpx.tracks[trackNo - 1];
+  var files = [
+    "ashland",
+    "blue_hills",
+    "foxboro",
+    "mystic_basin_trail",
+    "runkeeper",
+    "transalp",
+    "zypern"
+  ];
+  var m = map.create("#map");
+  var g = null;
+
+  $.each(files, function() {
+    $("#gpx").append($("<option>", { value: this, text: this }));
+  });
+  load(files[0]);
+
+  $("#gpx").change(function() {
+    $("#track").html("");
+    load(this.value);
+  });
+
+  $("#track").change(function() {
+    show(g.tracks[this.value]);
+  });
+
+  function load(file) {
+    gpx.load("gpx/" + file + ".gpx", function(gpx) {
+      g = gpx;
+      $.each(gpx.tracks, function(index, track) {
+        $("#track").append($("<option>", { value: index, text: track.name }));
+      });
+      show(g.tracks[0]);
+    });
+  }
+
+  function show(track) {
+    m.clear();
+    m.drawWayPoints(g.wayPoints);
     if (track) {
-      var m = map.create("#map");
       m.drawTrack(track);
-      m.drawWayPoints(gpx.wayPoints);
       elep.build(track, "#elep");
     }
-  });
+  }
 });
 
 // vim: expandtab:shiftwidth=2:softtabstop=2

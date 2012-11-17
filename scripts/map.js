@@ -1,115 +1,108 @@
 define(["jquery", "gmaps"], function($, gmaps) {
 
   function Map(selector, mapOptions) {
-    this.map = new gmaps.Map($(selector)[0], mapOptions);
-    this.overlays = [];
-    this.addEventListenerForTrackPointMarker();
-    this.addEventListenerForTrackRangeChange(this);
-  }	
 
-  Map.prototype.addEventListenerForTrackPointMarker = function() {
-    var self = this;
-    document.addEventListener("onTrackPointHover", function(event) {
-      if (event.trackPoint) {
-        if (self.trackPointMarker) {
-          self.trackPointMarker.setPosition(event.trackPoint.toLatLng());
-        } else {
-          self.trackPointMarker = new gmaps.Marker({
-            position: event.trackPoint.toLatLng(),
-            map: self.map,
-            zIndex: gmaps.Marker.MAX_ZINDEX,
-            icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-          });
+    var map = new gmaps.Map($(selector)[0], mapOptions);
+    var overlays = [];
+    var currentTrackPoint = new gmaps.Marker({
+      map: map,
+      zIndex: gmaps.Marker.MAX_ZINDEX,
+      icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+    });
+    var currentTrackRange = null;
+    var openedInfoWindow = null;
+
+    addEventListenerForTrackPointMarker();
+    addEventListenerForTrackRangeChange();
+
+    function addEventListenerForTrackPointMarker() {
+      document.addEventListener("onTrackPointHover", function(event) {
+        if (event.trackPoint) {
+          currentTrackPoint.setPosition(event.trackPoint.toLatLng());
+          currentTrackPoint.setMap(map);
         }
-      }
-      else {
-        if (self.trackPointMarker) {
-          self.trackPointMarker.setMap(null);
-          self.trackPointMarker = null;
+        else {
+          currentTrackPoint.setMap(null);
         }
-      }
-    }, false);
-  };
+      }, false);
+    }
 
-  Map.prototype.addEventListenerForTrackRangeChange = function() {
-    var self = this;
-    document.addEventListener("onChartRangeChanged", function(event) {
-      var path = $.map(event.trackPoints, function(trackPoint) { return trackPoint.toLatLng(); });
-      self.trackRange.setPath(path);
-      self.fitAndCenter(path);
-    }, false);
-  };
+    function addEventListenerForTrackRangeChange() {
+      document.addEventListener("onChartRangeChanged", function(event) {
+        var path = $.map(event.trackPoints, function(trackPoint) { return trackPoint.toLatLng(); });
+        currentTrackRange.setPath(path);
+        fitAndCenter(path);
+      }, false);
+    }
 
-  Map.prototype.clear = function() {
-    var self = this;
-    $.each(this.overlays, function() { this.setMap(null); });
-  };
+    function drawMarker(opts) {
+      opts.map = map;
+      var marker = new gmaps.Marker(opts);
+      overlays.push(marker);
+      return marker;
+    }
 
-  Map.prototype.drawTrack = function(track) {
-    var path = track.toPath();
-    var polyline = new gmaps.Polyline({
-      path: path,
-      map: this.map
-    });
-    this.overlays.push(polyline);
-    this.trackRange = new gmaps.Polyline({
-      path: path,
-      map: this.map,
-      strokeColor: "red"
-    });
-    this.overlays.push(this.trackRange);
-    var startMarker = new gmaps.Marker({
-      position: path[0],
-      map: this.map,
-      zIndex: gmaps.Marker.MAX_ZINDEX - 2,
-      icon: "http://maps.google.com/mapfiles/kml/pal4/icon20.png",
-      shadow: "http://maps.google.com/mapfiles/kml/pal4/icon20s.png",
-      title: "Start"
-    });
-    this.overlays.push(startMarker);
-    var endMarker = new gmaps.Marker({
-      position: path[path.length - 1],
-      map: this.map,
-      zIndex: gmaps.Marker.MAX_ZINDEX - 1,
-      icon: "http://maps.google.com/mapfiles/kml/pal4/icon21.png",
-      shadow: "http://maps.google.com/mapfiles/kml/pal4/icon21s.png",
-      title: "End"
-    });
-    this.overlays.push(endMarker);
-    var trackPointsWithName = $.grep(track.trackPoints, function(trackPoint) {
-      return trackPoint.name;
-    });
-    this.drawWayPoints(trackPointsWithName, "http://labs.google.com/ridefinder/images/mm_20_blue.png");
-    this.fitAndCenter(path);
-  };
+    function drawPolyline(opts) {
+      opts.map = map;
+      var polyline = new gmaps.Polyline(opts);
+      overlays.push(polyline);
+      return polyline;
+    }
+  
+    function fitAndCenter(points) {
+      var bounds = new gmaps.LatLngBounds();
+      $.each(points, function() { bounds.extend(this); });
+      map.fitBounds(bounds);
+    }
 
-  Map.prototype.drawWayPoints = function(wayPoints, icon) {
-    var self = this;
-    $.each(wayPoints, function() {
-      var marker = new gmaps.Marker({
-        position: this.toLatLng(),
-        map: self.map,
-        icon: icon
+    this.drawWayPoints = function(wayPoints, icon) {
+      $.each(wayPoints, function() {
+        var marker = drawMarker({
+          position: this.toLatLng(),
+          icon: icon
+        });
+        var infoWindow = new gmaps.InfoWindow({
+          content: "<h3>" + this.name + "</h3><p>" + this.desc + "</p>"
+        });
+        gmaps.event.addListener(marker, "click", function() {
+          if (openedInfoWindow) {
+            openedInfoWindow.close();
+          }
+          infoWindow.open(map, marker);
+          openedInfoWindow= infoWindow;
+        });
       });
-      self.overlays.push(marker);
-      var infoWindow = new gmaps.InfoWindow({
-        content: "<h3>" + this.name + "</h3><p>" + this.desc + "</p>"
+    };
+
+    this.drawTrack = function(track) {
+      var path = track.toPath();
+      drawPolyline({ path: path });
+      currentTrackRange = drawPolyline({ path: path, strokeColor: "red" });
+      drawMarker({
+        position: path[0],
+        zIndex: gmaps.Marker.MAX_ZINDEX - 2,
+        icon: "http://maps.google.com/mapfiles/kml/pal4/icon20.png",
+        shadow: "http://maps.google.com/mapfiles/kml/pal4/icon20s.png",
+        title: "Start"
       });
-      gmaps.event.addListener(marker, "click", function() {
-        if (self.infoWindow) {
-          self.infoWindow.close();
-        }
-        infoWindow.open(self.map, marker);
-        self.infoWindow = infoWindow;
+      drawMarker({
+        position: path[path.length - 1],
+        zIndex: gmaps.Marker.MAX_ZINDEX - 1,
+        icon: "http://maps.google.com/mapfiles/kml/pal4/icon21.png",
+        shadow: "http://maps.google.com/mapfiles/kml/pal4/icon21s.png",
+        title: "End"
       });
-    });
+      var trackPointsWithName = $.grep(track.trackPoints, function(trackPoint) {
+        return trackPoint.name;
+      });
+      this.drawWayPoints(trackPointsWithName, "http://labs.google.com/ridefinder/images/mm_20_blue.png");
+      fitAndCenter(path);
+    };
+
+    this.clear = function() {
+      $.each(overlays, function() { this.setMap(null); });
+    };
   }
-
-  Map.prototype.fitAndCenter = function(points) {
-    var bounds = new gmaps.LatLngBounds();
-    $.each(points, function() { bounds.extend(this); });
-    this.map.fitBounds(bounds);
-  };
 
   function create(selector) {
     var myLatLng = new google.maps.LatLng(0, -180);
@@ -127,4 +120,4 @@ define(["jquery", "gmaps"], function($, gmaps) {
 
 });
 
-// vim: expandtab:shiftwidth=2:softtabstop=2
+// vim:expandtab:shiftwidth=2:softtabstop=2

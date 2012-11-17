@@ -1,5 +1,7 @@
 define(["jquery", "gmaps"], function($, gmaps) {
 
+  var lastId = 0;
+
   function Gpx($gpx) {
     var self = this;
 
@@ -17,6 +19,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
   function Track($trk) {
     var self = this;
 
+    this.id = ++lastId;
     this.name = $trk.children("name").text();
     this.trackPoints = [];
     this.wayPointsWithoutElevation = [];
@@ -27,9 +30,10 @@ define(["jquery", "gmaps"], function($, gmaps) {
 
     $trk.find("trkpt").each(function() {
       var wayPoint = new WayPoint($(this));
+      wayPoint.track = self;
 
       if (prevWayPoint) {
-        wayPoint.distRel = gmaps.geometry.spherical.computeDistanceBetween(prevWayPoint.toLatLng(), wayPoint.toLatLng());
+        wayPoint.distRel = gmaps.geometry.spherical.computeDistanceBetween(prevWayPoint.position, wayPoint.position);
         wayPoint.dist = prevWayPoint.dist + wayPoint.distRel;
       } else {
         wayPoint.distRel = 0;
@@ -41,25 +45,17 @@ define(["jquery", "gmaps"], function($, gmaps) {
 
       // Remember way points without elevation
       if (!wayPoint.ele) {
-        var latLng = wayPoint.toLatLng();
+        var position = wayPoint.position;
         var index = self.trackPoints.length;
-        self.mapLatLngToWayPointIndex[latLng.toString()] = index;
-        self.wayPointsWithoutElevation.push(latLng);
+        self.mapLatLngToWayPointIndex[position.toString()] = index;
+        self.wayPointsWithoutElevation.push(position);
       }
     });
   }
 
-  Track.prototype.getTrackPoint = function(index) {
-    return this.trackPoints[index];
-  };
-
-  Track.prototype.getTrackPoints = function(startIndex, endIndex) {
-    return this.trackPoints.slice(startIndex, endIndex + 1);
-  };
-
   Track.prototype.toPath = function() {
     return $.map(this.trackPoints, function(trackPoint) {
-      return trackPoint.toLatLng();
+      return trackPoint.position;
     });
   }
 
@@ -109,6 +105,19 @@ define(["jquery", "gmaps"], function($, gmaps) {
     });
   };
 
+  Track.prototype.findNearestTrackPoint = function(position) {
+    var trackPoint = null;
+    var lowestDist = null;
+    $.each(this.trackPoints, function() {
+      var dist = gmaps.geometry.spherical.computeDistanceBetween(position, this.position);
+      if (lowestDist === null || dist < lowestDist) {
+        lowestDist = dist;
+        trackPoint = this;
+      }
+    });
+    return trackPoint;
+  };
+
   function WayPoint($wtp) {
     var attributes = ["lat", "lon"];
     for (var i = 0; i < attributes.length; i++) {
@@ -127,11 +136,9 @@ define(["jquery", "gmaps"], function($, gmaps) {
 
       this[name] = transform ? transform(text) : text;
     }
-  }
 
-  WayPoint.prototype.toLatLng = function() {
-    return new gmaps.LatLng(this.lat, this.lon);
-  };
+    this.position = new gmaps.LatLng(this.lat, this.lon);
+  }
 
   function load(url, callback) {
     $.ajax({

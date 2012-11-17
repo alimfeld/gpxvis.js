@@ -1,4 +1,4 @@
-define(["jquery", "gmaps"], function($, gmaps) {
+define(["jquery", "gmaps", "events"], function($, gmaps, events) {
 
   function Map(selector, mapOptions) {
 
@@ -7,33 +7,33 @@ define(["jquery", "gmaps"], function($, gmaps) {
     var currentTrackPoint = new gmaps.Marker({
       map: map,
       zIndex: gmaps.Marker.MAX_ZINDEX,
-      icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+      icon: "http://labs.google.com/ridefinder/images/mm_20_blue.png",
+      shadow: "http://labs.google.com/ridefinder/images/mm_20_shadow.png"
     });
-    var currentTrackRange = null;
+    var currentTrackRanges = [];
     var openedInfoWindow = null;
 
-    addEventListenerForTrackPointMarker();
-    addEventListenerForTrackRangeChange();
+    events.handle(events.TRACK_POINT_HOVER, function(event) {
+      var trackPoint = event.data.trackPoint;
+      if (trackPoint) {
+        currentTrackPoint.setPosition(trackPoint.position);
+        currentTrackPoint.setMap(map);
+      }
+      else {
+        currentTrackPoint.setMap(null);
+      }
+    });
 
-    function addEventListenerForTrackPointMarker() {
-      document.addEventListener("onTrackPointHover", function(event) {
-        if (event.trackPoint) {
-          currentTrackPoint.setPosition(event.trackPoint.toLatLng());
-          currentTrackPoint.setMap(map);
-        }
-        else {
-          currentTrackPoint.setMap(null);
-        }
-      }, false);
-    }
-
-    function addEventListenerForTrackRangeChange() {
-      document.addEventListener("onChartRangeChanged", function(event) {
-        var path = $.map(event.trackPoints, function(trackPoint) { return trackPoint.toLatLng(); });
-        currentTrackRange.setPath(path);
+    events.handle(events.TRACK_RANGE_CHANGE, function(event) {
+      var track = event.data.track;
+      var trackPoints = event.data.trackPoints;
+      var path = $.map(trackPoints, function(trackPoint) { return trackPoint.position; });
+      var trackRange = currentTrackRanges[track.id];
+      if (trackRange) {
+        trackRange.setPath(path);
         fitAndCenter(path);
-      }, false);
-    }
+      }
+    });
 
     function drawMarker(opts) {
       opts.map = map;
@@ -58,7 +58,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
     this.drawWayPoints = function(wayPoints, icon) {
       $.each(wayPoints, function() {
         var marker = drawMarker({
-          position: this.toLatLng(),
+          position: this.position,
           icon: icon
         });
         var infoWindow = new gmaps.InfoWindow({
@@ -77,25 +77,30 @@ define(["jquery", "gmaps"], function($, gmaps) {
     this.drawTrack = function(track) {
       var path = track.toPath();
       drawPolyline({ path: path });
-      currentTrackRange = drawPolyline({ path: path, strokeColor: "red" });
+      var trackRange = drawPolyline({ path: path, strokeColor: "red" });
+      currentTrackRanges[track.id] = trackRange;
       drawMarker({
         position: path[0],
         zIndex: gmaps.Marker.MAX_ZINDEX - 2,
-        icon: "http://maps.google.com/mapfiles/kml/pal4/icon20.png",
-        shadow: "http://maps.google.com/mapfiles/kml/pal4/icon20s.png",
+        icon: "http://maps.google.com/mapfiles/dd-start.png",
         title: "Start"
       });
       drawMarker({
         position: path[path.length - 1],
         zIndex: gmaps.Marker.MAX_ZINDEX - 1,
-        icon: "http://maps.google.com/mapfiles/kml/pal4/icon21.png",
-        shadow: "http://maps.google.com/mapfiles/kml/pal4/icon21s.png",
+        icon: "http://maps.google.com/mapfiles/dd-end.png",
         title: "End"
       });
       var trackPointsWithName = $.grep(track.trackPoints, function(trackPoint) {
         return trackPoint.name;
       });
       this.drawWayPoints(trackPointsWithName, "http://labs.google.com/ridefinder/images/mm_20_blue.png");
+      gmaps.event.addListener(trackRange, 'mouseover', function(event) {
+        events.fire(events.TRACK_POINT_HOVER, { trackPoint: track.findNearestTrackPoint(event.latLng) });
+      });
+      gmaps.event.addListener(map, 'mouseout', function(event) {
+        events.fire(events.TRACK_POINT_HOVER, { trackPoint: null });
+      });
       fitAndCenter(path);
     };
 

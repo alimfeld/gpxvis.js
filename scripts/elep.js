@@ -1,4 +1,4 @@
-define(["jquery", "gvis"], function($, gvis) {
+define(["jquery", "gvis", "events"], function($, gvis, events) {
 
   function ElevationProfile(track, targetDiv) {
     this.track = track;
@@ -21,6 +21,16 @@ define(["jquery", "gvis"], function($, gvis) {
 
     this.addControlWrapperStateChangeListener();
     this.addChartWrapperListener();
+
+    events.handle(events.TRACK_POINT_HOVER, function(event) {
+      var trackPoint = event.data.trackPoint;
+      if (trackPoint && trackPoint.track === self.track) {
+        var row = self.track.trackPoints.indexOf(trackPoint) - self.firstRow;
+        self.chartWrapper.getChart().setSelection([{row: row}]);
+      } else {
+        self.chartWrapper.getChart().setSelection();
+      }
+    });
   }
 
   function addChildElements(targetDiv) {
@@ -104,36 +114,25 @@ define(["jquery", "gvis"], function($, gvis) {
           );
         self.firstRow = filteredRowIds[0];
         self.lastRow = filteredRowIds[filteredRowIds.length - 1];
-        fireChartRangeChangedEvent(self.track.getTrackPoints(self.firstRow, self.lastRow));
+        events.fire(events.TRACK_RANGE_CHANGE, {
+          track: self.track,
+          trackPoints: self.track.trackPoints.slice(self.firstRow, self.lastRow + 1)
+        });
       }
     });
   };
-
-  function fireChartRangeChangedEvent(trackPoints) {
-    var event = document.createEvent("Event");
-    event.initEvent("onChartRangeChanged", true, true);
-    event.trackPoints = trackPoints;
-    document.dispatchEvent(event);
-  }
 
   ElevationProfile.prototype.addChartWrapperListener = function() {
     var self = this;
     gvis.events.addListener(self.chartWrapper, "ready", function() {
       gvis.events.addListener(self.chartWrapper.getChart(), "onmouseover", function(data) {
-        var trackPoint = self.track.getTrackPoint(self.firstRow + data.row);
-        fireOnTrackPointHoverEvent(trackPoint);
+        var trackPoint = self.track.trackPoints[self.firstRow + data.row];
+        events.fire(events.TRACK_POINT_HOVER, { trackPoint: trackPoint });
       });
-      gvis.events.addListener(self.chartWrapper.getChart(), "onmouseout", function(data) {
-        fireOnTrackPointHoverEvent();
+      $("#chart").mouseleave(function() {
+        events.fire(events.TRACK_POINT_HOVER, { trackPoint: null });
       });
     });
-  }
-
-  function fireOnTrackPointHoverEvent(trackPoint) {
-    var event = document.createEvent("Event");
-    event.initEvent("onTrackPointHover", true, true);
-    event.trackPoint = trackPoint;
-    document.dispatchEvent(event);
   }
 
   function build(track, targetDiv) {

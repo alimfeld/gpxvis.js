@@ -21,6 +21,10 @@ and allows to draw tracks and waypoints from a GPX file.
 Creates an elevation profile for a track using the [Google Chart
 Tools](https://developers.google.com/chart/).
 
+### events
+
+Defines event constants and utility functions to fire and handle events.
+
 Features
 --------
 
@@ -31,8 +35,8 @@ Features
 
 * The elevation profile can be zoomed in and out by selecting a range.
 
-* The elevation profile is linked to the track drawn on the map:
-  - The current point (mouseover) is marked on the map.
+* The elevation profile is linked to the track drawn on the map and vice versa:
+  - The current point (mouseover) is marked on the map and in the elevation profile.
   - The selected range is highlighted on the map.
   - The map automatically fits and centers the selected range.
 

@@ -6,7 +6,7 @@ define(["jquery", "gmaps", "events"], function($, gmaps, events) {
     var overlays = [];
     var currentTrackPoint = new gmaps.Marker({
       map: map,
-      zIndex: gmaps.Marker.MAX_ZINDEX,
+      zIndex: gmaps.Marker.MAX_ZINDEX - 1,
       icon: "http://labs.google.com/ridefinder/images/mm_20_blue.png",
       shadow: "http://labs.google.com/ridefinder/images/mm_20_shadow.png"
     });
@@ -17,7 +17,9 @@ define(["jquery", "gmaps", "events"], function($, gmaps, events) {
       var trackPoint = event.data.trackPoint;
       if (trackPoint) {
         currentTrackPoint.setPosition(trackPoint.position);
-        currentTrackPoint.setMap(map);
+        if (currentTrackPoint.map == null) {
+          currentTrackPoint.setMap(map);
+        }
       }
       else {
         currentTrackPoint.setMap(null);
@@ -76,18 +78,24 @@ define(["jquery", "gmaps", "events"], function($, gmaps, events) {
 
     this.drawTrack = function(track) {
       var path = track.toPath();
-      drawPolyline({ path: path });
-      var trackRange = drawPolyline({ path: path, strokeColor: "red" });
+      drawPolyline({ path: path, clickable: false });
+      var trackRange = drawPolyline({
+        path: path,
+        zIndex: gmaps.Marker.MAX_ZINDEX,
+        strokeColor: "red",
+        strokeOpacity: 0.5,
+        strokeWeight: 20
+       });
       currentTrackRanges[track.id] = trackRange;
       drawMarker({
         position: path[0],
-        zIndex: gmaps.Marker.MAX_ZINDEX - 2,
+        zIndex: gmaps.Marker.MAX_ZINDEX - 3,
         icon: "http://maps.google.com/mapfiles/dd-start.png",
         title: "Start"
       });
       drawMarker({
         position: path[path.length - 1],
-        zIndex: gmaps.Marker.MAX_ZINDEX - 1,
+        zIndex: gmaps.Marker.MAX_ZINDEX - 2,
         icon: "http://maps.google.com/mapfiles/dd-end.png",
         title: "End"
       });
@@ -95,10 +103,10 @@ define(["jquery", "gmaps", "events"], function($, gmaps, events) {
         return trackPoint.name;
       });
       this.drawWayPoints(trackPointsWithName, "http://labs.google.com/ridefinder/images/mm_20_blue.png");
-      gmaps.event.addListener(trackRange, 'mouseover', function(event) {
+      gmaps.event.addListener(trackRange, 'mousemove', function(event) {
         events.fire(events.TRACK_POINT_HOVER, { trackPoint: track.findNearestTrackPoint(event.latLng) });
       });
-      gmaps.event.addListener(map, 'mouseout', function(event) {
+      gmaps.event.addListener(trackRange, 'mouseout', function(event) {
         events.fire(events.TRACK_POINT_HOVER, { trackPoint: null });
       });
       fitAndCenter(path);

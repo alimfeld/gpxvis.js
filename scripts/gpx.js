@@ -64,11 +64,8 @@ define(["jquery", "gmaps"], function($, gmaps) {
       return;
     }
     var elevationService = new gmaps.ElevationService();
-    var locations = $.map(this.trackPoints, function(trackPoint) {
-      return trackPoint.position;
-    });
     var self = this;
-    elevationService.getElevationForLocations({ locations: locations }, function(results, status) {
+    elevationService.getElevationForLocations({ locations: this.toPath() }, function(results, status) {
       if (status == gmaps.ElevationStatus.OK) {
         if (results.length > 0) {
           $.each(results, function(index, result) {

@@ -102,7 +102,13 @@ define(["jquery", "gmaps", "events"], function($, gmaps, events) {
       var trackPointsWithName = $.grep(track.trackPoints, function(trackPoint) {
         return trackPoint.name;
       });
-      this.drawWayPoints(trackPointsWithName, "http://labs.google.com/ridefinder/images/mm_20_blue.png");
+      this.drawWayPoints(trackPointsWithName, {
+        path: gmaps.SymbolPath.CIRCLE,
+        scale: 5,
+        strokeWeight: 0,
+        fillColor: "blue",
+        fillOpacity: 0.5
+      });
       gmaps.event.addListener(trackRange, 'mousemove', function(event) {
         events.fire(events.TRACK_POINT_HOVER, { trackPoint: track.findNearestTrackPoint(event.latLng) });
       });

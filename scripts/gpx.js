@@ -4,42 +4,51 @@ define(["jquery", "gmaps"], function($, gmaps) {
 
   function Gpx($gpx) {
     this.wayPoints = [];
+    this.wayPointsByPosition = {};
     this.tracks = [];
 
     var self = this;
     $gpx.find("wpt").each(function() {
-      self.wayPoints.push(new WayPoint($(this)));
+      var wayPoint = new WayPoint($(this));
+      self.wayPoints.push(wayPoint);
+      self.wayPointsByPosition[wayPoint.position] = wayPoint;
     });
     $gpx.find("trk").each(function() {
-      self.tracks.push(new Track($(this)));
+      self.tracks.push(new Track($(this), self));
     });
   }
 
-  function Track($trk) {
+  function Track($trk, gpx) {
     this.id = ++lastId;
     this.name = $trk.children("name").text();
     this.trackPoints = [];
     this.elevationMissing = false;
-    var prevWayPoint = undefined;
+    var prevTrackPoint = undefined;
 
     var self = this;
     $trk.find("trkpt").each(function() {
-      var wayPoint = new WayPoint($(this));
-      wayPoint.track = self;
+      var trackPoint = new WayPoint($(this));
+      trackPoint.track = self;
 
-      if (prevWayPoint) {
-        wayPoint.distRel = gmaps.geometry.spherical.computeDistanceBetween(prevWayPoint.position, wayPoint.position);
-        wayPoint.dist = prevWayPoint.dist + wayPoint.distRel;
+      if (prevTrackPoint) {
+        trackPoint.distRel = gmaps.geometry.spherical.computeDistanceBetween(prevTrackPoint.position, trackPoint.position);
+        trackPoint.dist = prevTrackPoint.dist + trackPoint.distRel;
       } else {
-        wayPoint.distRel = 0;
-        wayPoint.dist = 0;
+        trackPoint.distRel = 0;
+        trackPoint.dist = 0;
       }
 
-      prevWayPoint = wayPoint;
-      self.trackPoints.push(wayPoint);
+      prevTrackPoint = trackPoint;
+      self.trackPoints.push(trackPoint);
 
-      if (!wayPoint.ele) {
+      if (!trackPoint.ele) {
         self.elevationMissing = true;
+      }
+
+      var wayPoint = gpx.wayPointsByPosition[trackPoint.position];
+      if (wayPoint) {
+        trackPoint.name = wayPoint.name;
+        trackPoint.desc = wayPoint.desc;
       }
     });
   }

@@ -145,4 +145,4 @@ define(["jquery", "gvis", "events"], function($, gvis, events) {
 
 });
 
-// vim: expandtab:shiftwidth=2:softtabstop=2
+// vim: et:si:sw=2:sts=2

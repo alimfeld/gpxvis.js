@@ -18,4 +18,4 @@ define("gvis", ["goog!visualization,1,packages:[corechart,controls]"], function(
 
 require(["app"]);
 
-// vim: expandtab:shiftwidth=2:softtabstop=2
+// vim: et:si:sw=2:sts=2

@@ -3,31 +3,26 @@ define(["jquery", "gmaps"], function($, gmaps) {
   var lastId = 0;
 
   function Gpx($gpx) {
-    var self = this;
-
     this.wayPoints = [];
+    this.tracks = [];
+
+    var self = this;
     $gpx.find("wpt").each(function() {
       self.wayPoints.push(new WayPoint($(this)));
     });
-
-    this.tracks = [];
     $gpx.find("trk").each(function() {
       self.tracks.push(new Track($(this)));
     });
   }
 
   function Track($trk) {
-    var self = this;
-
     this.id = ++lastId;
     this.name = $trk.children("name").text();
     this.trackPoints = [];
-    this.wayPointsWithoutElevation = [];
-    this.mapLatLngToWayPointIndex = {};
-
+    this.elevationMissing = false;
     var prevWayPoint = undefined;
-    var self = this;
 
+    var self = this;
     $trk.find("trkpt").each(function() {
       var wayPoint = new WayPoint($(this));
       wayPoint.track = self;
@@ -43,12 +38,8 @@ define(["jquery", "gmaps"], function($, gmaps) {
       prevWayPoint = wayPoint;
       self.trackPoints.push(wayPoint);
 
-      // Remember way points without elevation
       if (!wayPoint.ele) {
-        var position = wayPoint.position;
-        var index = self.trackPoints.length;
-        self.mapLatLngToWayPointIndex[position.toString()] = index;
-        self.wayPointsWithoutElevation.push(position);
+        self.elevationMissing = true;
       }
     });
   }
@@ -67,39 +58,28 @@ define(["jquery", "gmaps"], function($, gmaps) {
     }
   };
 
-  Track.prototype.lookUpMissingElevationData = function(callback) {
-    if (this.wayPointsWithoutElevation.length == 0) {
-      console.log("No lookup needed for track " + this.name);
-      return callback();
-    } 
-
-    console.log("ElevationLookUp: Look up data for " 
-        + this.wayPointsWithoutElevation.length + " locations in track " + this.name);
-
-
+  Track.prototype.addMissingElevation = function(callback) {
+    if (!this.elevationMissing) {
+      callback();
+      return;
+    }
     var elevationService = new gmaps.ElevationService();
-    var positionalRequest = {
-      "locations": this.wayPointsWithoutElevation
-    };
-
+    var locations = $.map(this.trackPoints, function(trackPoint) {
+      return trackPoint.position;
+    });
     var self = this;
-
-    elevationService.getElevationForLocations(positionalRequest, function(results, status) {
+    elevationService.getElevationForLocations({ locations: locations }, function(results, status) {
       if (status == gmaps.ElevationStatus.OK) {
         if (results.length > 0) {
-          console.log("ElevationLookUp: Got " + results.length + " results");
-
-          $.each(results, function(k, result) {
-            var key = result.location.toString();
-            var index = self.mapLatLngToWayPointIndex[key];
-            // TODO refactor, probably remove mapping table 
-            self.trackPoints[k].ele = result.elevation;
+          $.each(results, function(index, result) {
+            self.trackPoints[index].ele = result.elevation;
           });
+          self.elevationMissing = false;
         } else {
-          console.log("ElevationLookUp: No results found");
+          console.log("ElevationService: No results found");
         }
       } else {
-        console.log("ElevationLookUp: Failed due to: " + status);
+        console.log("ElevationService: Failed with status: " + status);
       }
       callback();
     });

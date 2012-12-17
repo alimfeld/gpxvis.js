@@ -14,7 +14,7 @@ define(["jquery", "gvis", "events"], function($, gvis, events) {
     this.dashboard.bind(this.controlWrapper, this.chartWrapper);
 
     var self = this;
-    track.lookUpMissingElevationData(function() {
+    track.addMissingElevation(function() {
       self.dataTable = buildDataTable(self.track);
       self.dashboard.draw(self.dataTable);
     });

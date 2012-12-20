@@ -4,11 +4,18 @@ define(["jquery", "gmaps", "events"], function($, gmaps, events) {
 
     var map = new gmaps.Map($(selector)[0], mapOptions);
     var overlays = [];
+    var currentTrackPointIcon = {
+      path: "m-8,0 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0 m3,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0",
+      strokeColor: "white",
+      strokeWeight: 2,
+      strokeOpacity: 0.6,
+      fillColor: "blue",
+      fillOpacity: 1 
+    };
     var currentTrackPoint = new gmaps.Marker({
       map: map,
-      zIndex: gmaps.Marker.MAX_ZINDEX - 1,
-      icon: "http://labs.google.com/ridefinder/images/mm_20_blue.png",
-      shadow: "http://labs.google.com/ridefinder/images/mm_20_shadow.png"
+      zIndex: gmaps.Marker.MAX_ZINDEX,
+      icon: currentTrackPointIcon
     });
     var currentTrackRanges = [];
     var openedInfoWindow = null;
@@ -81,7 +88,7 @@ define(["jquery", "gmaps", "events"], function($, gmaps, events) {
       drawPolyline({ path: path, clickable: false });
       var trackRange = drawPolyline({
         path: path,
-        zIndex: gmaps.Marker.MAX_ZINDEX,
+        zIndex: gmaps.Marker.MAX_ZINDEX - 1,
         strokeColor: "red",
         strokeOpacity: 0.5,
         strokeWeight: 20
@@ -105,9 +112,11 @@ define(["jquery", "gmaps", "events"], function($, gmaps, events) {
       this.drawWayPoints(trackPointsWithName, {
         path: gmaps.SymbolPath.CIRCLE,
         scale: 5,
-        strokeWeight: 0,
+        strokeColor: "white",
+        strokeWeight: 2,
+        strokeOpacity: 0.6,
         fillColor: "blue",
-        fillOpacity: 0.5
+        fillOpacity: 1 
       });
       gmaps.event.addListener(trackRange, 'mousemove', function(event) {
         events.fire(events.TRACK_POINT_HOVER, { trackPoint: track.findNearestTrackPoint(event.latLng) });

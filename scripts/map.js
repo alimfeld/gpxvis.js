@@ -56,6 +56,10 @@ define(["jquery", "gmaps", "events", "config"], function($, gmaps, events, confi
       var markerOpts = opts || config.applyWayPointMarkerDefaults({});
       $.each(wayPoints, function() {
         markerOpts.position = this.position;
+        markerOpts.title = this.name;
+        if (this.ele) {
+           markerOpts.title += " (" + Math.round(this.ele) + " m)";
+        }
         var marker = drawMarker(markerOpts);
         var infoWindow = new gmaps.InfoWindow({
           content: "<h3>" + this.name + "</h3><p>" + this.desc + "</p>"

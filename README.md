@@ -25,6 +25,10 @@ Tools](https://developers.google.com/chart/).
 
 Defines event constants and utility functions to fire and handle events.
 
+### config
+
+Defines default configuration settings for map and elevation profile display.
+
 Features
 --------
 

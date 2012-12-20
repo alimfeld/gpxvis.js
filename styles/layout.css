@@ -1,5 +1,5 @@
 div#map {
-  height: 600px;
+  height: 400px;
 }
 
 #map img {
@@ -7,13 +7,13 @@ div#map {
 }
 
 div#elep {
-  height: 200px;
+  height: 300px;
 }
 
 div#elep div#chart {
-  height: 80%;
+  height: 60%;
 }
 
 div#elep div#control {
-  height: 20%;
+  height: 40%;
 }

@@ -72,7 +72,7 @@ define(["jquery", "gvis", "events"], function($, gvis, events) {
            "chartArea": { "width": "90%" },
            "legend": "none",
            "titleY": "Elevation (m)",
-           "titleX": "Distance (m)",
+           "titleX": "Distance (km)",
            "focusBorderColor": "#00ff00",
            }
     });
@@ -80,13 +80,24 @@ define(["jquery", "gvis", "events"], function($, gvis, events) {
 
   function buildDataTable(track) {
     var dataArray = [];
+    var namedTrackPointCount = 0;
 
     $.each(track.trackPoints, function(trackPointNr, trackPoint) {
+      var annotation = null;
+      var annotationText = null;
+      var distance = Math.round(trackPoint.dist / 1000) + " km";
+      var elevation = Math.round(trackPoint.ele) + " m";
+      if (trackPoint.name) {
+        namedTrackPointCount += 1;
+        annotation = "" + namedTrackPointCount;
+        annotationText = trackPoint.name + " (" + elevation + ")";
+      }
       dataArray.push([ 
         trackPoint.dist,
         trackPoint.ele,
-        Math.round(trackPoint.ele) + " m",
-        trackPoint.name
+        distance + " / " + elevation,
+        annotation,
+        annotationText
         ]);
     });
 
@@ -95,6 +106,7 @@ define(["jquery", "gvis", "events"], function($, gvis, events) {
     dt.addColumn("number", "Elevation");
     dt.addColumn({ type: "string", role: "tooltip" });
     dt.addColumn({ type: "string", role: "annotation" });
+    dt.addColumn({ type: "string", role: "annotationText" });
     dt.addRows(dataArray);
 
     return dt;

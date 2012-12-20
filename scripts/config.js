@@ -15,7 +15,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
   var currentTrackPointMarkerDefaults = {
     zIndex: gmaps.Marker.MAX_ZINDEX,
     icon: {
-      path: "m-8,0 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0 m3,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0",
+      path: "m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0 m3,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0",
       strokeColor: "white",
       strokeWeight: 2,
       strokeOpacity: 0.6,
@@ -28,7 +28,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
     zIndex: gmaps.Marker.MAX_ZINDEX - 5,
     icon: {
       path: gmaps.SymbolPath.CIRCLE,
-      scale: 5,
+      scale: 4,
       strokeColor: "white",
       strokeWeight: 2,
       strokeOpacity: 0.6,
@@ -43,13 +43,14 @@ define(["jquery", "gmaps"], function($, gmaps) {
 
   var trackPolylineDefaults = {
     clickable: false,
+    strokeWeight: 2,
     strokeColor: "blue"
   };
 
   var trackRangePolylineDefaults = {
     zIndex: gmaps.Marker.MAX_ZINDEX - 1,
     strokeColor: "blue",
-    strokeOpacity: 0.5,
+    strokeOpacity: 0.2,
     strokeWeight: 20
   };
 

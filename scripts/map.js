@@ -1,35 +1,23 @@
-define(["jquery", "gmaps", "events"], function($, gmaps, events) {
+define(["jquery", "gmaps", "events", "config"], function($, gmaps, events, config) {
 
   function Map(selector, mapOptions) {
 
     var map = new gmaps.Map($(selector)[0], mapOptions);
     var overlays = [];
-    var currentTrackPointIcon = {
-      path: "m-8,0 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0 m3,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0",
-      strokeColor: "white",
-      strokeWeight: 2,
-      strokeOpacity: 0.6,
-      fillColor: "blue",
-      fillOpacity: 1 
-    };
-    var currentTrackPoint = new gmaps.Marker({
-      map: map,
-      zIndex: gmaps.Marker.MAX_ZINDEX,
-      icon: currentTrackPointIcon
-    });
+    var currentTrackPointMarker = new gmaps.Marker(config.applyCurrentTrackPointMarkerDefaults({ map: map }));
     var currentTrackRanges = [];
     var openedInfoWindow = null;
 
     events.handle(events.TRACK_POINT_HOVER, function(event) {
       var trackPoint = event.data.trackPoint;
       if (trackPoint) {
-        currentTrackPoint.setPosition(trackPoint.position);
-        if (currentTrackPoint.map == null) {
-          currentTrackPoint.setMap(map);
+        currentTrackPointMarker.setPosition(trackPoint.position);
+        if (currentTrackPointMarker.map == null) {
+          currentTrackPointMarker.setMap(map);
         }
       }
       else {
-        currentTrackPoint.setMap(null);
+        currentTrackPointMarker.setMap(null);
       }
     });
 
@@ -64,12 +52,11 @@ define(["jquery", "gmaps", "events"], function($, gmaps, events) {
       map.fitBounds(bounds);
     }
 
-    this.drawWayPoints = function(wayPoints, icon) {
+    this.drawWayPoints = function(wayPoints, opts) {
+      var markerOpts = opts || config.applyWayPointMarkerDefaults({});
       $.each(wayPoints, function() {
-        var marker = drawMarker({
-          position: this.position,
-          icon: icon
-        });
+        markerOpts.position = this.position;
+        var marker = drawMarker(markerOpts);
         var infoWindow = new gmaps.InfoWindow({
           content: "<h3>" + this.name + "</h3><p>" + this.desc + "</p>"
         });
@@ -85,45 +72,27 @@ define(["jquery", "gmaps", "events"], function($, gmaps, events) {
 
     this.drawTrack = function(track) {
       var path = track.toPath();
-      drawPolyline({ path: path, clickable: false });
-      var trackRange = drawPolyline({
-        path: path,
-        zIndex: gmaps.Marker.MAX_ZINDEX - 1,
-        strokeColor: "blue",
-        strokeOpacity: 0.5,
-        strokeWeight: 20
-       });
+
+      drawPolyline(config.applyTrackPolylineDefaults({ path: path }));
+
+      var trackRange = drawPolyline(config.applyTrackRangePolylineDefaults({ path: path }));
       currentTrackRanges[track.id] = trackRange;
-      drawMarker({
-        position: path[0],
-        zIndex: gmaps.Marker.MAX_ZINDEX - 3,
-        icon: "http://maps.google.com/mapfiles/dd-start.png",
-        title: "Start"
-      });
-      drawMarker({
-        position: path[path.length - 1],
-        zIndex: gmaps.Marker.MAX_ZINDEX - 2,
-        icon: "http://maps.google.com/mapfiles/dd-end.png",
-        title: "End"
-      });
-      var trackPointsWithName = $.grep(track.trackPoints, function(trackPoint) {
+
+      drawMarker(config.applyStartMarkerDefaults({ position: path[0] }));
+      drawMarker(config.applyEndMarkerDefaults({ position: path[path.length - 1] }));
+
+      var namedTrackPoints = $.grep(track.trackPoints, function(trackPoint) {
         return trackPoint.name;
       });
-      this.drawWayPoints(trackPointsWithName, {
-        path: gmaps.SymbolPath.CIRCLE,
-        scale: 5,
-        strokeColor: "white",
-        strokeWeight: 2,
-        strokeOpacity: 0.6,
-        fillColor: "blue",
-        fillOpacity: 1 
-      });
+      this.drawWayPoints(namedTrackPoints, config.applyNamedTrackPointMarkerDefaults({}));
+
       gmaps.event.addListener(trackRange, 'mousemove', function(event) {
         events.fire(events.TRACK_POINT_HOVER, { trackPoint: track.findNearestTrackPoint(event.latLng) });
       });
       gmaps.event.addListener(trackRange, 'mouseout', function(event) {
         events.fire(events.TRACK_POINT_HOVER, { trackPoint: null });
       });
+
       fitAndCenter(path);
     };
 

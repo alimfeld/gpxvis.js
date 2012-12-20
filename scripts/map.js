@@ -89,7 +89,7 @@ define(["jquery", "gmaps", "events"], function($, gmaps, events) {
       var trackRange = drawPolyline({
         path: path,
         zIndex: gmaps.Marker.MAX_ZINDEX - 1,
-        strokeColor: "red",
+        strokeColor: "blue",
         strokeOpacity: 0.5,
         strokeWeight: 20
        });

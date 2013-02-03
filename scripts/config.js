@@ -1,18 +1,18 @@
 define(["jquery", "gmaps"], function($, gmaps) {
 
-  var startMarkerDefaults = {
+  var startMarkerConfig = {
     zIndex: gmaps.Marker.MAX_ZINDEX - 3,
     icon: "http://maps.google.com/mapfiles/dd-start.png",
     title: "Start"
   };
 
-  var endMarkerDefaults = {
+  var endMarkerConfig = {
     zIndex: gmaps.Marker.MAX_ZINDEX - 4,
     icon: "http://maps.google.com/mapfiles/dd-end.png",
     title: "End"
   };
 
-  var currentTrackPointMarkerDefaults = {
+  var currentTrackpointMarkerConfig = {
     zIndex: gmaps.Marker.MAX_ZINDEX - 0,
     icon: {
       path: "m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0 m3,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0",
@@ -24,7 +24,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
     }
   };
 
-  var namedTrackPointMarkerDefaults = {
+  var namedTrackpointMarkerConfig = {
     zIndex: gmaps.Marker.MAX_ZINDEX - 2,
     icon: {
       path: gmaps.SymbolPath.CIRCLE,
@@ -37,49 +37,84 @@ define(["jquery", "gmaps"], function($, gmaps) {
     }
   };
 
-  var wayPointMarkerDefaults = {
+  var waypointMarkerConfig = {
     zIndex: gmaps.Marker.MAX_ZINDEX - 1
   };
 
-  var trackPolylineDefaults = {
+  var trackPolylineConfig = {
     zIndex: gmaps.Marker.MAX_ZINDEX - 6,
     clickable: false,
     strokeWeight: 2,
     strokeColor: "blue"
   };
 
-  var trackRangePolylineDefaults = {
+  var trackRangePolylineConfig = {
     zIndex: gmaps.Marker.MAX_ZINDEX - 5,
     strokeColor: "blue",
-    strokeOpacity: 0.2,
+    strokeOpacity: 0.3,
     strokeWeight: 20
   };
 
-  function applyDefaults(target, markerDefaults) {
-    return $.extend(true, target, markerDefaults);
+  var controlWrapperConfig = {
+    options: {
+      ui: {
+        chartType: "AreaChart",
+        chartOptions: {
+          chartArea: { width: "90%" }
+        },
+        snapToData: true
+      }
+    }
+  };
+
+  var chartWrapperConfig = {
+    options: {
+      chartArea: { width: "90%" },
+      title: "Elevation profile",
+      legend: "none",
+      titleY: "Elevation (m)",
+      titleX: "Distance (km)"
+    }
+  };
+
+  function applyConfig(target, config) {
+    return $.extend(true, target, config);
+  }
+
+  function updateConfig(config, values) {
+    return $.extend(true, config, values);
   }
 
   return {
-    applyStartMarkerDefaults: function(target) {
-      return applyDefaults(target, startMarkerDefaults);
+    applyStartMarkerConfig: function(target) {
+      return applyConfig(target, startMarkerConfig);
     },
-    applyEndMarkerDefaults: function(target) {
-      return applyDefaults(target, endMarkerDefaults);
+    applyEndMarkerConfig: function(target) {
+      return applyConfig(target, endMarkerConfig);
     },
-    applyCurrentTrackPointMarkerDefaults: function(target) {
-      return applyDefaults(target, currentTrackPointMarkerDefaults);
+    applyCurrentTrackpointMarkerConfig: function(target) {
+      return applyConfig(target, currentTrackpointMarkerConfig);
     },
-    applyNamedTrackPointMarkerDefaults: function(target) {
-      return applyDefaults(target, namedTrackPointMarkerDefaults);
+    applyNamedTrackpointMarkerConfig: function(target) {
+      return applyConfig(target, namedTrackpointMarkerConfig);
     },
-    applyWayPointMarkerDefaults: function(target) {
-      return applyDefaults(target, wayPointMarkerDefaults);
+    applyWaypointMarkerConfig: function(target) {
+      return applyConfig(target, waypointMarkerConfig);
     },
-    applyTrackPolylineDefaults: function(target) {
-      return applyDefaults(target, trackPolylineDefaults);
+    applyTrackPolylineConfig: function(target) {
+      return applyConfig(target, trackPolylineConfig);
     },
-    applyTrackRangePolylineDefaults: function(target) {
-      return applyDefaults(target, trackRangePolylineDefaults);
+    updateTrackPolylineConfig: function(values) {
+      return updateConfig(trackPolylineConfig, values);
+    },
+    applyTrackRangePolylineConfig: function(target) {
+      return applyConfig(target, trackRangePolylineConfig);
+    },
+    applyControlWrapperConfig: function(target) {
+      return applyConfig(target, controlWrapperConfig);
+    },
+    applyChartWrapperConfig: function(target) {
+      return applyConfig(target, chartWrapperConfig);
     }
   }
 });

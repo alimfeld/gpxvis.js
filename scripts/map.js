@@ -4,27 +4,27 @@ define(["jquery", "gmaps", "events", "config"], function($, gmaps, events, confi
 
     var map = new gmaps.Map($(selector)[0], mapOptions);
     var overlays = [];
-    var currentTrackPointMarker = new gmaps.Marker(config.applyCurrentTrackPointMarkerDefaults({ map: map }));
+    var currentTrackpointMarker = new gmaps.Marker(config.applyCurrentTrackpointMarkerConfig({ map: map }));
     var currentTrackRanges = [];
     var openedInfoWindow = null;
 
     events.handle(events.TRACK_POINT_HOVER, function(event) {
-      var trackPoint = event.data.trackPoint;
-      if (trackPoint) {
-        currentTrackPointMarker.setPosition(trackPoint.position);
-        if (currentTrackPointMarker.map == null) {
-          currentTrackPointMarker.setMap(map);
+      var trackpoint = event.data.trackpoint;
+      if (trackpoint) {
+        currentTrackpointMarker.setPosition(trackpoint.position);
+        if (currentTrackpointMarker.map == null) {
+          currentTrackpointMarker.setMap(map);
         }
       }
       else {
-        currentTrackPointMarker.setMap(null);
+        currentTrackpointMarker.setMap(null);
       }
     });
 
     events.handle(events.TRACK_RANGE_CHANGE, function(event) {
       var track = event.data.track;
-      var trackPoints = event.data.trackPoints;
-      var path = $.map(trackPoints, function(trackPoint) { return trackPoint.position; });
+      var trackpoints = event.data.trackpoints;
+      var path = $.map(trackpoints, function(trackpoint) { return trackpoint.position; });
       var trackRange = currentTrackRanges[track.id];
       if (trackRange) {
         trackRange.setPath(path);
@@ -52,9 +52,9 @@ define(["jquery", "gmaps", "events", "config"], function($, gmaps, events, confi
       map.fitBounds(bounds);
     }
 
-    this.drawWayPoints = function(wayPoints, opts) {
-      var markerOpts = opts || config.applyWayPointMarkerDefaults({});
-      $.each(wayPoints, function() {
+    this.drawWaypoints = function(waypoints, opts) {
+      var markerOpts = opts || config.applyWaypointMarkerConfig({});
+      $.each(waypoints, function() {
         markerOpts.position = this.position;
         markerOpts.title = this.name;
         if (this.ele) {
@@ -77,24 +77,24 @@ define(["jquery", "gmaps", "events", "config"], function($, gmaps, events, confi
     this.drawTrack = function(track) {
       var path = track.toPath();
 
-      drawPolyline(config.applyTrackPolylineDefaults({ path: path }));
+      drawPolyline(config.applyTrackPolylineConfig({ path: path }));
 
-      var trackRange = drawPolyline(config.applyTrackRangePolylineDefaults({ path: path }));
+      var trackRange = drawPolyline(config.applyTrackRangePolylineConfig({ path: path }));
       currentTrackRanges[track.id] = trackRange;
 
-      drawMarker(config.applyStartMarkerDefaults({ position: path[0] }));
-      drawMarker(config.applyEndMarkerDefaults({ position: path[path.length - 1] }));
+      drawMarker(config.applyStartMarkerConfig({ position: path[0] }));
+      drawMarker(config.applyEndMarkerConfig({ position: path[path.length - 1] }));
 
-      var namedTrackPoints = $.grep(track.trackPoints, function(trackPoint) {
-        return trackPoint.name;
+      var namedTrackpoints = $.grep(track.trackpoints, function(trackpoint) {
+        return trackpoint.name;
       });
-      this.drawWayPoints(namedTrackPoints, config.applyNamedTrackPointMarkerDefaults({}));
+      this.drawWaypoints(namedTrackpoints, config.applyNamedTrackpointMarkerConfig({}));
 
       gmaps.event.addListener(trackRange, 'mousemove', function(event) {
-        events.fire(events.TRACK_POINT_HOVER, { trackPoint: track.findNearestTrackPoint(event.latLng) });
+        events.fire(events.TRACK_POINT_HOVER, { trackpoint: track.findNearestTrackpoint(event.latLng) });
       });
       gmaps.event.addListener(trackRange, 'mouseout', function(event) {
-        events.fire(events.TRACK_POINT_HOVER, { trackPoint: null });
+        events.fire(events.TRACK_POINT_HOVER, { trackpoint: null });
       });
 
       fitAndCenter(path);

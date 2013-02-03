@@ -1,6 +1,6 @@
-define(["jquery", "gpx", "map", "elep"], function($, gpx, map, elep) {
+define(["jquery", "gpx", "map", "elep", "config"], function($, gpx, map, elep, config) {
 
-  var files = [
+  var _files = [
     "ashland",
     "blue_hills",
     "foxboro",
@@ -9,13 +9,13 @@ define(["jquery", "gpx", "map", "elep"], function($, gpx, map, elep) {
     "transalp",
     "zypern"
   ];
-  var m = map.create("#map");
-  var g = null;
+  var _map = map.create("#map");
+  var _gpx = null;
+  var _track = null;
 
-  $.each(files, function() {
+  $.each(_files, function() {
     $("#gpx").append($("<option>", { value: this, text: this }));
   });
-  load(files[0]);
 
   $("#gpx").change(function() {
     $("#track").html("");
@@ -23,27 +23,49 @@ define(["jquery", "gpx", "map", "elep"], function($, gpx, map, elep) {
   });
 
   $("#track").change(function() {
-    show(g.tracks[this.value]);
+    show(_gpx.tracks[this.value]);
   });
+
+  $("#configuration").submit(function() {
+    updateConfig();
+    return false;
+  });
+
+  load(_files[0]);
+  loadConfig();
 
   function load(file) {
     gpx.load("gpx/" + file + ".gpx", function(gpx) {
-      g = gpx;
+      _gpx = gpx;
       $.each(gpx.tracks, function(index, track) {
         $("#track").append($("<option>", { value: index, text: track.name }));
       });
-      show(g.tracks[0]);
+      show(_gpx.tracks[0]);
     });
   }
 
   function show(track) {
-    m.clear();
-    m.drawWayPoints(g.wayPoints);
+    _track = track;
+    _map.clear();
+    _map.drawWaypoints(_gpx.waypoints);
     if (track) {
-      m.drawTrack(track);
-      elep.build(track, "#elep");
+      _map.drawTrack(track);
+      elep.create("#elep", track);
     }
   }
+
+  function loadConfig() {
+    var trackPolylineConfig = config.applyTrackPolylineConfig({});
+    $("#trackPolylineStrokeColor").val(trackPolylineConfig.strokeColor);
+  }
+
+  function updateConfig() {
+    config.updateTrackPolylineConfig({
+      strokeColor: $("#trackPolylineStrokeColor").val()
+    });
+    show(_track);
+  }
+
 });
 
-// vim: expandtab:shiftwidth=2:softtabstop=2
+// vim: et:si:sw=2:sts=2

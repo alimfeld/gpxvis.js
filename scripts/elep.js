@@ -1,6 +1,6 @@
-define(["jquery", "gvis", "events"], function($, gvis, events) {
+define(["jquery", "gvis", "events", "config"], function($, gvis, events, config) {
 
-  function ElevationProfile(track, targetDiv) {
+  function ElevationProfile(targetDiv, track) {
     this.track = track;
 
     addChildElements(targetDiv);
@@ -15,7 +15,7 @@ define(["jquery", "gvis", "events"], function($, gvis, events) {
 
     var self = this;
     track.addMissingElevation(function() {
-      self.dataTable = buildDataTable(self.track);
+      self.dataTable = createDataTable(self.track);
       self.dashboard.draw(self.dataTable);
     });
 
@@ -23,9 +23,9 @@ define(["jquery", "gvis", "events"], function($, gvis, events) {
     this.addChartWrapperListener();
 
     events.handle(events.TRACK_POINT_HOVER, function(event) {
-      var trackPoint = event.data.trackPoint;
-      if (trackPoint && trackPoint.track === self.track) {
-        var row = self.track.trackPoints.indexOf(trackPoint) - self.firstRow;
+      var trackpoint = event.data.trackpoint;
+      if (trackpoint && trackpoint.track === self.track) {
+        var row = self.track.trackpoints.indexOf(trackpoint) - self.firstRow;
         self.chartWrapper.getChart().setSelection([{row: row}]);
       } else {
         self.chartWrapper.getChart().setSelection();
@@ -43,58 +43,41 @@ define(["jquery", "gvis", "events"], function($, gvis, events) {
   }
 
   function createControlWrapper() {
-    var controlWrapper = new gvis.ControlWrapper({
-      "controlType": "ChartRangeFilter",
-        "containerId": "control",
-        "options": {
-          "filterColumnIndex": 0, // filter by distance
-        "ui": {
-          "width": "50%",
-        "chartType": "AreaChart",
-        "chartOptions": {
-          "chartArea": { "width": "90%" },
-        "hAxis": {"baselineColor": "none"},
-        },
-        "snapToData": true
-        }
-        }
-    });
+    var controlWrapper = new gvis.ControlWrapper(config.applyControlWrapperConfig({
+      controlType: "ChartRangeFilter",
+      containerId: "control",
+      options: {
+        filterColumnIndex: 0
+      }
+    }));
 
     return controlWrapper;
   }
 
   function createChartWrapper() {
-    return new gvis.ChartWrapper({
-      "chartType": "AreaChart",
-           "containerId": "chart",
-           "options": {
-             "width": "50%",
-           "chartArea": { "width": "90%" },
-           "legend": "none",
-           "titleY": "Elevation (m)",
-           "titleX": "Distance (km)",
-           "focusBorderColor": "#00ff00",
-           }
-    });
+    return new gvis.ChartWrapper(config.applyChartWrapperConfig({
+      chartType: "AreaChart",
+      containerId: "chart"
+    }));
   }
 
-  function buildDataTable(track) {
+  function createDataTable(track) {
     var dataArray = [];
-    var namedTrackPointCount = 0;
+    var namedTrackpointCount = 0;
 
-    $.each(track.trackPoints, function(trackPointNr, trackPoint) {
+    $.each(track.trackpoints, function(trackpointNr, trackpoint) {
       var annotation = null;
       var annotationText = null;
-      var distance = Math.round(trackPoint.dist / 1000) + " km";
-      var elevation = Math.round(trackPoint.ele) + " m";
-      if (trackPoint.name) {
-        namedTrackPointCount += 1;
-        annotation = "" + namedTrackPointCount;
-        annotationText = trackPoint.name + " (" + elevation + ")";
+      var distance = Math.round(trackpoint.dist / 1000) + " km";
+      var elevation = Math.round(trackpoint.ele) + " m";
+      if (trackpoint.name) {
+        namedTrackpointCount += 1;
+        annotation = "" + namedTrackpointCount;
+        annotationText = trackpoint.name + " (" + elevation + ")";
       }
       dataArray.push([ 
-        trackPoint.dist,
-        trackPoint.ele,
+        trackpoint.dist / 1000,
+        trackpoint.ele,
         distance + " / " + elevation,
         annotation,
         annotationText
@@ -102,8 +85,8 @@ define(["jquery", "gvis", "events"], function($, gvis, events) {
     });
 
     var dt = new gvis.DataTable();
-    dt.addColumn("number", "Distance");
-    dt.addColumn("number", "Elevation");
+    dt.addColumn({ type: "number", label: "Distance", pattern: "#.#" });
+    dt.addColumn({ type: "number", label: "Elevation", pattern: "#" });
     dt.addColumn({ type: "string", role: "tooltip" });
     dt.addColumn({ type: "string", role: "annotation" });
     dt.addColumn({ type: "string", role: "annotationText" });
@@ -128,7 +111,7 @@ define(["jquery", "gvis", "events"], function($, gvis, events) {
         self.lastRow = filteredRowIds[filteredRowIds.length - 1];
         events.fire(events.TRACK_RANGE_CHANGE, {
           track: self.track,
-          trackPoints: self.track.trackPoints.slice(self.firstRow, self.lastRow + 1)
+          trackpoints: self.track.trackpoints.slice(self.firstRow, self.lastRow + 1)
         });
       }
     });
@@ -138,21 +121,21 @@ define(["jquery", "gvis", "events"], function($, gvis, events) {
     var self = this;
     gvis.events.addListener(self.chartWrapper, "ready", function() {
       gvis.events.addListener(self.chartWrapper.getChart(), "onmouseover", function(data) {
-        var trackPoint = self.track.trackPoints[self.firstRow + data.row];
-        events.fire(events.TRACK_POINT_HOVER, { trackPoint: trackPoint });
+        var trackpoint = self.track.trackpoints[self.firstRow + data.row];
+        events.fire(events.TRACK_POINT_HOVER, { trackpoint: trackpoint });
       });
       $("#chart").mouseleave(function() {
-        events.fire(events.TRACK_POINT_HOVER, { trackPoint: null });
+        events.fire(events.TRACK_POINT_HOVER, { trackpoint: null });
       });
     });
   }
 
-  function build(track, targetDiv) {
-    return new ElevationProfile(track, targetDiv);
+  function create(targetDiv, track) {
+    return new ElevationProfile(targetDiv, track);
   }
 
   return {
-    build: build
+    create: create
   }
 
 });

@@ -10,17 +10,38 @@
   <body>
     <div class="container-fluid">
       <div class="row-fluid">
-        <h1>GPXVis.js</h1>
-        <form>
-          <fieldset>
-            <legend>Please select GPX file and track to visualize.</legend>
-            <select id="gpx"></select>
-            <select id="track"></select>
-          </fieldset> 
-        </form>
+        <div class="span12">
+          <h1>gpxvis.js demo</h1>
+          <p>JavaScript modules for visualizing GPX data.</p>
+          <p>This is a simple demo of gpxvis.js features. Select a sample GPX file and a track below. The track is displayed on the map (together with all the waypoints in the GPX file) and an elevation profile chart is created. A range control widget (just below the elevation profile chart) allows you to select the range of the track to display on the map and in the elevation profile chart.</p>
+        </div>
       </div>
-      <div id="map" class="row-fluid"></div>
-      <div id="elep" class="row-fluid"></div>
+      <div class="row-fluid">
+        <div class="span8">
+          <h2>Visualization</h2>
+          <form>
+            <fieldset>
+              <label for="gpx">GPX file and track selection</label>
+              <select id="gpx"></select>
+              <select id="track"></select>
+            </fieldset> 
+          </form>
+          <div id="map" class="row-fluid"></div>
+          <div id="elep" class="row-fluid"></div>
+        </div>
+        <div class="span4">
+          <h2>Configuration</h2>
+          <form id="configuration">
+            <fieldset>
+              <label for="trackPolylineStrokeColor">Track color</label>
+              <input type="text" id="trackPolylineStrokeColor"/>
+              <div class="controls">
+                <button type="submit" class="btn btn-primary">Apply</button>
+              </div>
+            </fieldset> 
+          </form>
+        </div>
+      </div>
     </div>
   </body>
 </html>

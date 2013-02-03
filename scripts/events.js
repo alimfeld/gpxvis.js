@@ -12,7 +12,7 @@ define(["jquery"], function($) {
   }
 
   return {
-    TRACK_POINT_HOVER: "trackPointHover",
+    TRACK_POINT_HOVER: "trackpointHover",
     TRACK_RANGE_CHANGE: "trackRangeChange",
     fire: fire,
     handle: handle

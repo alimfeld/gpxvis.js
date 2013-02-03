@@ -3,15 +3,15 @@ define(["jquery", "gmaps"], function($, gmaps) {
   var lastId = 0;
 
   function Gpx($gpx) {
-    this.wayPoints = [];
-    this.wayPointsByPosition = {};
+    this.waypoints = [];
+    this.waypointsByPosition = {};
     this.tracks = [];
 
     var self = this;
     $gpx.find("wpt").each(function() {
-      var wayPoint = new WayPoint($(this));
-      self.wayPoints.push(wayPoint);
-      self.wayPointsByPosition[wayPoint.position] = wayPoint;
+      var waypoint = new Waypoint($(this));
+      self.waypoints.push(waypoint);
+      self.waypointsByPosition[waypoint.position] = waypoint;
     });
     $gpx.find("trk").each(function() {
       self.tracks.push(new Track($(this), self));
@@ -21,47 +21,47 @@ define(["jquery", "gmaps"], function($, gmaps) {
   function Track($trk, gpx) {
     this.id = ++lastId;
     this.name = $trk.children("name").text();
-    this.trackPoints = [];
+    this.trackpoints = [];
     this.elevationMissing = false;
-    var prevTrackPoint = undefined;
+    var prevTrackpoint = undefined;
 
     var self = this;
     $trk.find("trkpt").each(function() {
-      var trackPoint = new WayPoint($(this));
-      trackPoint.track = self;
+      var trackpoint = new Waypoint($(this));
+      trackpoint.track = self;
 
-      if (prevTrackPoint) {
-        trackPoint.distRel = gmaps.geometry.spherical.computeDistanceBetween(prevTrackPoint.position, trackPoint.position);
-        trackPoint.dist = prevTrackPoint.dist + trackPoint.distRel;
+      if (prevTrackpoint) {
+        trackpoint.distRel = gmaps.geometry.spherical.computeDistanceBetween(prevTrackpoint.position, trackpoint.position);
+        trackpoint.dist = prevTrackpoint.dist + trackpoint.distRel;
       } else {
-        trackPoint.distRel = 0;
-        trackPoint.dist = 0;
+        trackpoint.distRel = 0;
+        trackpoint.dist = 0;
       }
 
-      prevTrackPoint = trackPoint;
-      self.trackPoints.push(trackPoint);
+      prevTrackpoint = trackpoint;
+      self.trackpoints.push(trackpoint);
 
-      if (!trackPoint.ele) {
+      if (!trackpoint.ele) {
         self.elevationMissing = true;
       }
 
-      var wayPoint = gpx.wayPointsByPosition[trackPoint.position];
-      if (wayPoint) {
-        trackPoint.name = wayPoint.name;
-        trackPoint.desc = wayPoint.desc;
+      var waypoint = gpx.waypointsByPosition[trackpoint.position];
+      if (waypoint) {
+        trackpoint.name = waypoint.name;
+        trackpoint.desc = waypoint.desc;
       }
     });
   }
 
   Track.prototype.toPath = function() {
-    return $.map(this.trackPoints, function(trackPoint) {
-      return trackPoint.position;
+    return $.map(this.trackpoints, function(trackpoint) {
+      return trackpoint.position;
     });
   }
 
   Track.prototype.getDist = function() {
-    if (this.trackPoints.length > 1) {
-      return this.trackPoints[this.trackPoints.length - 1].dist;
+    if (this.trackpoints.length > 1) {
+      return this.trackpoints[this.trackpoints.length - 1].dist;
     } else {
       return 0;
     }
@@ -78,7 +78,7 @@ define(["jquery", "gmaps"], function($, gmaps) {
       if (status == gmaps.ElevationStatus.OK) {
         if (results.length > 0) {
           $.each(results, function(index, result) {
-            self.trackPoints[index].ele = result.elevation;
+            self.trackpoints[index].ele = result.elevation;
           });
           self.elevationMissing = false;
         } else {
@@ -91,20 +91,20 @@ define(["jquery", "gmaps"], function($, gmaps) {
     });
   };
 
-  Track.prototype.findNearestTrackPoint = function(position) {
-    var trackPoint = null;
+  Track.prototype.findNearestTrackpoint = function(position) {
+    var trackpoint = null;
     var lowestDist = null;
-    $.each(this.trackPoints, function() {
+    $.each(this.trackpoints, function() {
       var dist = gmaps.geometry.spherical.computeDistanceBetween(position, this.position);
       if (lowestDist === null || dist < lowestDist) {
         lowestDist = dist;
-        trackPoint = this;
+        trackpoint = this;
       }
     });
-    return trackPoint;
+    return trackpoint;
   };
 
-  function WayPoint($wtp) {
+  function Waypoint($wtp) {
     var attributes = ["lat", "lon"];
     for (var i = 0; i < attributes.length; i++) {
       this[attributes[i]] = $wtp.attr(attributes[i]);
